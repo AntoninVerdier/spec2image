@@ -8,37 +8,14 @@ import matplotlib.pyplot as plt
 from scipy import signal as signal
 from scipy.io import wavfile
 
+import plot as pl 
 import settings as sett
 
 paths = sett.paths()
 params = sett.parameters()
 
-#Extract data
-data_path = '../Samples/'
-sample, samplerate = librosa.load(os.path.join(data_path, 'example02.wav'),
-								  sr=None, mono=True, offset=0.0, duration=None)
-
-print(sample.strides[0])
-
-print(len(sample))
-# plt.figure()
-# display.waveplot(y=sample, sr=samplerate)
-# plt.xlabel('Time (sec)')
-# plt.ylabel('Amplitude')
-# plt.show()
-# Remove stereoif needed
-# sample = np.transpose(sample[:, 0])
-
-def fast_fourier(sample, samplerate, plot=False):
+def fast_fourier(sample, samplerate):
 	fft = scipy.fft(sample)
-	if plot:
-		n = len(sample)
-		T = 1/samplerate
-		xf = np.linspace(0, 1/(2*T), n//2)
-		plt.plot(xf, 2/n * np.abs(fft[:n//2]))
-		plt.xlabel('Frequency')
-		plt.ylabel('Magnitude')
-		plt.show()
 
 	return fft
 
@@ -76,20 +53,11 @@ def spectrogram(sample, samplerate, window_ms=20, stride_ms=10, max_freq=4000, e
 	return specgram
 
 
-
-
-def spectro(sample, samplerate, plot=False):
+def spectro(sample, samplerate):
 	frequencies, times, spectrogram = signal.spectrogram(sample, samplerate)
 
 	# Perform min-max normalization
 	spectrogram = (spectrogram - np.min(spectrogram))/(np.max(spectrogram) - np.min(spectrogram))
-
-	if plot:
-		# To save in desired location
-		plt.pcolormesh(times, frequencies, spectrogram)
-		plt.ylabel('Frequency [Hz]')
-		plt.xlabel('Time [sec]')
-		plt.show()
 
 	return frequencies, times, spectrogram
 
@@ -113,23 +81,45 @@ def create_amplitude_mask(res, random=False):
 	return amplitude_mask
 
 
+
+#Extract data
+data_path = '../Samples/'
+sample, samplerate = librosa.load(os.path.join(data_path, 'example02.wav'),
+								  sr=None, mono=True, offset=0.0, duration=None)
+
+# If sample is in stereo take only one track
+if sample.ndim > 1:
+	sample = np.transpose(sample[:, 0])
+
+# Visualize data through waveplot
+pl.waveplot(sample, samplerate)
+
+# Perform Fourier transform and plotting
+fft = fast_fourier(sample, samplerate)
+pl.fft(sample, samplerate, fft)
+
+# Compute spectrogram
 specgram = spectrogram(sample, samplerate)
-plt.pcolormesh(specgram)
-plt.show()
+#frequencies, times, spectrogram = spectro(sample, samplerate, plot=False)
+pl.spectrogram(specgram)
 
-frequencies, times, spectrogram = spectro(sample, samplerate, plot=False)
-print(spectrogram.shape)
-
-
+# Create placeholder for spatial frequency masks and selectivity vector
 spatial_tensor = create_spatial_masks(params.size_implant, params.freq_resolution, random=True)
 amplitude_mask = create_amplitude_mask(params.freq_resolution, random=True)
 
 # Extract frequencies for a given time
-freq_series = [spectrogram[:, i] for i in range(spectrogram.shape[0])]
+freq_series = [specgram[:, i] for i in range(specgram.shape[0])]
 
 # Filter them by 2D mask
+downscaled_freqs = []
+for freq in freq_series:
+	downscaled_freq = [np.sum((freq >= params.freqs[i-1]) & (freq < params.freqs[i])) for i, f in enumerate(params.freqs)]
+	downscaled_freqs.append(downscaled_freq)
+
+print(downscaled_freqs)
+# masked_freq
 
 # Apply frequency selectivity
-
+# tensor_to_project = masked_freq * freq_selectivity[:, np.newaxis, np.newaxis]
 
 

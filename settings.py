@@ -12,4 +12,4 @@ class parameters():
 	def __init__(self):
 		self.size_implant = 10
 		self.freq_resolution = 20
-		self.freqs = np.logspace(12e3, 20e3, num=self.freq_resolution)
+		self.freqs = np.linspace(12e3, 20e3, num=self.freq_resolution+1)
