@@ -96,7 +96,7 @@ pl.waveplot(sample, samplerate)
 
 # Perform Fourier transform and plotting
 fft = fast_fourier(sample, samplerate)
-pl.fft(sample, samplerate, fft)
+# pl.fft(sample, samplerate, fft)
 
 # Compute spectrogram
 specgram = spectrogram(sample, samplerate)
@@ -108,18 +108,25 @@ spatial_tensor = create_spatial_masks(params.size_implant, params.freq_resolutio
 amplitude_mask = create_amplitude_mask(params.freq_resolution, random=True)
 
 # Extract frequencies for a given time
-freq_series = [specgram[:, i] for i in range(specgram.shape[0])]
+freq_series = [specgram[:, i] for i in range(specgram.shape[1])]
 
 # Filter them by 2D mask
 downscaled_freqs = []
 for freq in freq_series:
-	downscaled_freq = [np.sum((freq >= params.freqs[i-1]) & (freq < params.freqs[i])) for i, f in enumerate(params.freqs)]
+	downscaled_freq = [np.sum((freq >= params.freqs[i-1]) & (freq < params.freqs[i])) for i, f in enumerate(params.freqs[1:])]
 	downscaled_freqs.append(downscaled_freq)
 
-print(downscaled_freqs)
-# masked_freq
+downscaled_freqs = np.array(downscaled_freqs)
+
+# Apply frequencies to tonotopic maps
+tensor_to_project = []
+for time_point in downscaled_freqs:
+	tonotopic_frequency = spatial_tensor[:, :, :] * time_point[np.newaxis, np.newaxis, :]
+	tensor_to_project.append(tonotopic_frequency)
+
+tensor_to_project = np.array(tensor_to_project)
 
 # Apply frequency selectivity
-# tensor_to_project = masked_freq * freq_selectivity[:, np.newaxis, np.newaxis]
+tensor_to_project = tensor_to_project * amplitude_mask[np.newaxis, np.newaxis, :]
 
 
