@@ -19,7 +19,7 @@ def fast_fourier(sample, samplerate):
 
 	return fft
 
-def spectrogram(sample, samplerate, window_ms=20, stride_ms=10, max_freq=4000, eps=1e-14):
+def old_spectrogram(sample, samplerate, window_ms=20, stride_ms=10, max_freq=4000, eps=1e-14):
 	window_size = int(window_ms * samplerate * 0.001)
 	stride_size = int(stride_ms * samplerate * 0.001)
 
@@ -53,14 +53,17 @@ def spectrogram(sample, samplerate, window_ms=20, stride_ms=10, max_freq=4000, e
 	return specgram
 
 
-def spectro(sample, samplerate):
-	frequencies, times, spectrogram = signal.spectrogram(sample, samplerate)
+def spectro(sample, samplerate, window_ms=20, windows_ms=20, overlap=50):
+	window_size = int(window_ms * samplerate * 0.001)
+	overlap_size = overlap * 0.01* window_size
 
-	# Perform min-max normalization
-	spectrogram = (spectrogram - np.min(spectrogram))/(np.max(spectrogram) - np.min(spectrogram))
+	spectrum, frequencies, times, im = plt.specgram(sample, Fs=samplerate, 
+													NFFT=window_size, noverlap=overlap_size)
 
-	return frequencies, times, spectrogram
+	plt.savefig(os.path.join(paths.path2Output, 'sample_spectrogram.png'))
 
+
+	return spectrum, frequencies, times
 
 
 def create_spatial_masks(size, res, random=False):
@@ -99,9 +102,9 @@ fft = fast_fourier(sample, samplerate)
 # pl.fft(sample, samplerate, fft)
 
 # Compute spectrogram
-specgram = spectrogram(sample, samplerate)
-#frequencies, times, spectrogram = spectro(sample, samplerate, plot=False)
-pl.spectrogram(specgram)
+#specgram = old_spectrogram(sample, samplerate)
+specgram, frequencies, times = spectro(sample, samplerate)
+# pl.spectrogram(specgram, frequencies, times)
 
 # Create placeholder for spatial frequency masks and selectivity vector
 spatial_tensor = create_spatial_masks(params.size_implant, params.freq_resolution, random=True)

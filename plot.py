@@ -42,7 +42,7 @@ def spectrogram(spectrogram, time=None, frequencies=None):
 	"""
 	plt.figure(figsize=(12, 6))
 
-	display.specshow(spectrogram, x_coords=time, y_coords=frequencies)
+	plt.imshow(spectrogram, interpolation=None)
 
 	plt.title('Spectrogram of sound sample')
 	plt.xlabel('Time (sec)')
