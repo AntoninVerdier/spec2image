@@ -1,3 +1,15 @@
 # spec2image
+This algorithm converts arbitrary sound files into a 2D-shape sequence of images, consistant with the tonotopic maps of the auditory cortex of the mouse. 
 
-Implémentation d'un algorithme linéaire de conversion de spectrogrammes de sons arbitraires vers une séquence d'images 2D, pour la stimulation du cortex en accord avec la carte tonotopique observée chez la souris
+## Pre-processing
+A Fourier transform is performed on the raw sound signal every `window * sample_rate` point. Default parameters are consistant with a speech recognition task `window = 20ms`, `overlap = 50%`. A spectrogram is then generated.
+
+For memory purposes, tonotopic maps of the auditory cortex are first downscaled. Each tonotopic map has a original shape of `'2000, 2500`. Averaging is done using blocks of shape `(4, 4)`, bringing final shape to `(500, 625)`.
+
+## Weighting of tonotopic maps
+For each timepoint in the spectrogram, a vector encapsulating all frequencies magnitudes is extracted. Followinf the tonotopic map selectivity (currently 4kHz, 16kHz and 32kHz) magnitudes around each map frequency are summed (frequencies of interest in the signal are selected using a gaussian window centered on map selectivity).
+
+Each tonotpic map is then multiplied at any given time by the corresponding magnitude. A animated gif can be generated for visualisation.
+
+
+
