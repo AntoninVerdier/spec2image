@@ -4,6 +4,7 @@ import numpy as np
 
 from librosa import display 
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 
 import settings as sett 
 paths = sett.paths()
@@ -47,12 +48,32 @@ def spectrogram(spectrogram, time=None, frequencies=None):
 	plt.title('Spectrogram of sound sample')
 	plt.xlabel('Time (sec)')
 	plt.ylabel('Frequency (Hz)')
+	plt.xticks(time)
+	plt.yticks(frequencies)
 
 	plt.savefig(os.path.join(paths.path2Output, 'sample_spectrogram.png'))
 	plt.close()
 
+def gif_projections(gen):
+	fig = plt.figure()
+
+	ims = []
+	for image in gen:
+	    im = plt.imshow(image[0, :, :], animated=True, cmap="Greys")
+	    plt.axis("off")
+	    ims.append([im])
+
+	ani = animation.ArtistAnimation(fig, ims, interval=100, blit=False,
+	                                repeat_delay=1000)
+# # print(tonotopic_maps)
+# print(tonotopic_maps.shape)
 
 
+# for i in range(5):
+# 	print(np.max(tonotopic_maps[i]))
+# 	plt.imshow(tonotopic_maps[0, :, :], cmap='gray')
+# 	plt.show()
+# 	plt.close()
 
 
 

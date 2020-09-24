@@ -5,8 +5,9 @@ from librosa import load, display
 import numpy as np 
 import matplotlib.pyplot as plt 
 
-from scipy import signal as signal
+from tqdm import tqdm
 from scipy.io import wavfile
+from scipy import signal as signal
 
 import plot as pl 
 import settings as sett
@@ -20,6 +21,7 @@ def fast_fourier(sample, samplerate):
 	return fft
 
 def old_spectrogram(sample, samplerate, window_ms=20, stride_ms=10, max_freq=4000, eps=1e-14):
+	# Test function, do not use
 	window_size = int(window_ms * samplerate * 0.001)
 	stride_size = int(stride_ms * samplerate * 0.001)
 
@@ -83,12 +85,14 @@ def create_amplitude_mask(res, random=False):
 
 	return amplitude_mask
 
-
-
 #Extract data
-data_path = '../Samples/'
-sample, samplerate = librosa.load(os.path.join(data_path, 'example02.wav'),
+sample, samplerate = librosa.load(os.path.join(paths.path2Sample, 'example03.wav'),
 								  sr=None, mono=True, offset=0.0, duration=None)
+
+tonotopic_maps = np.load(os.path.join(paths.path2Data, 'INT_Sebmice_alignedtohorizon.npy'))
+
+# Remove weighted map at the end
+tonotopic_maps = tonotopic_maps[:-1, :, :]
 
 # If sample is in stereo take only one track
 if sample.ndim > 1:
@@ -98,7 +102,7 @@ if sample.ndim > 1:
 pl.waveplot(sample, samplerate)
 
 # Perform Fourier transform and plotting
-fft = fast_fourier(sample, samplerate)
+# fft = fast_fourier(sample, samplerate)
 # pl.fft(sample, samplerate, fft)
 
 # Compute spectrogram
@@ -107,29 +111,36 @@ specgram, frequencies, times = spectro(sample, samplerate)
 # pl.spectrogram(specgram, frequencies, times)
 
 # Create placeholder for spatial frequency masks and selectivity vector
-spatial_tensor = create_spatial_masks(params.size_implant, params.freq_resolution, random=True)
 amplitude_mask = create_amplitude_mask(params.freq_resolution, random=True)
 
 # Extract frequencies for a given time
 freq_series = [specgram[:, i] for i in range(specgram.shape[1])]
 
-# Filter them by 2D mask
-downscaled_freqs = []
-for freq in freq_series:
-	downscaled_freq = [np.sum((freq >= params.freqs[i-1]) & (freq < params.freqs[i])) for i, f in enumerate(params.freqs[1:])]
-	downscaled_freqs.append(downscaled_freq)
+magnitude_indexs = [np.where(np.logical_and(frequencies >= params.freqs[i], frequencies < params.freqs[i+1])) 
+					for i, fr in enumerate(params.freqs[:-1])]
+print(tonotopic_maps.shape)
 
+
+downscaled_freqs = []
+for i, freq in tqdm(enumerate(freq_series)):
+	# Min max normalization of magnitude frequencies
+	if np.max(freq) > 0:
+		freq = (freq - np.min(freq))/(np.max(freq) - np.min(freq))
+
+	downscaled_freqs.append([np.sum(freq[idx]) for idx in magnitude_indexs])
 downscaled_freqs = np.array(downscaled_freqs)
 
-# Apply frequencies to tonotopic maps
-tensor_to_project = []
-for time_point in downscaled_freqs:
-	tonotopic_frequency = spatial_tensor[:, :, :] * time_point[np.newaxis, np.newaxis, :]
-	tensor_to_project.append(tonotopic_frequency)
+# Create a generator since full array is too large
+tonotopic_projections_gen = (tonotopic_maps * freq[:, np.newaxis, np.newaxis] for freq in downscaled_freqs)
 
-tensor_to_project = np.array(tensor_to_project)
+# pl.gif_projections(tonotopic_projections_gen)
+
+# tonotopic_projection = tonotopic_maps * downscaled_freq[:, np.newaxis, np.newaxis]
+
+# tonotopic_projections = np.array(tonotopic_projections)
+
 
 # Apply frequency selectivity
-tensor_to_project = tensor_to_project * amplitude_mask[np.newaxis, np.newaxis, :]
+# tensor_to_project = tensor_to_project * amplitude_mask[np.newaxis, np.newaxis, :]
 
 
