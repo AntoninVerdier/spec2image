@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 from scipy.io import wavfile
 from scipy import signal as signal
+from skimage.measure import block_reduce
 
 import plot as pl 
 import settings as sett
@@ -85,18 +86,35 @@ def create_amplitude_mask(res, random=False):
 
 	return amplitude_mask
 
+def tonotopic_map(idx, tmap, freqs):
+	return tmap * freqs[idx][:, np.newaxis, np.newaxis]
+
+def downscale_tmaps(tmaps, block_size=(4, 4)):
+	tmaps_reduced = []
+	for i, tmap in enumerate(tonotopic_maps):
+		tmap_reduced = block_reduce(tmap, block_size=block_size, func=np.mean)
+		tmaps_reduced.append(tmap_reduced)
+
+	return np.array(tmaps_reduced)
+
+
+
+
 #Extract data
 sample, samplerate = librosa.load(os.path.join(paths.path2Sample, 'example03.wav'),
 								  sr=None, mono=True, offset=0.0, duration=None)
 
 tonotopic_maps = np.load(os.path.join(paths.path2Data, 'INT_Sebmice_alignedtohorizon.npy'))
 
+# Reshape tonotopic maps to 625 x 500 arrays
+tonotopic_maps = downscale_tmaps(tonotopic_maps, block_size=(4, 4))
+
 # Remove weighted map at the end
 tonotopic_maps = tonotopic_maps[:-1, :, :]
 
 # If sample is in stereo take only one track
 if sample.ndim > 1:
-	sample = np.transpose(sample[:, 0])
+	sample = np.transpose(sample[:-len(sample)/2, 0])
 
 # Visualize data through waveplot
 pl.waveplot(sample, samplerate)
@@ -106,9 +124,8 @@ pl.waveplot(sample, samplerate)
 # pl.fft(sample, samplerate, fft)
 
 # Compute spectrogram
-#specgram = old_spectrogram(sample, samplerate)
 specgram, frequencies, times = spectro(sample, samplerate)
-# pl.spectrogram(specgram, frequencies, times)
+pl.spectrogram(specgram, frequencies, times)
 
 # Create placeholder for spatial frequency masks and selectivity vector
 amplitude_mask = create_amplitude_mask(params.freq_resolution, random=True)
@@ -118,8 +135,6 @@ freq_series = [specgram[:, i] for i in range(specgram.shape[1])]
 
 magnitude_indexs = [np.where(np.logical_and(frequencies >= params.freqs[i], frequencies < params.freqs[i+1])) 
 					for i, fr in enumerate(params.freqs[:-1])]
-print(tonotopic_maps.shape)
-
 
 downscaled_freqs = []
 for i, freq in tqdm(enumerate(freq_series)):
@@ -131,7 +146,10 @@ for i, freq in tqdm(enumerate(freq_series)):
 downscaled_freqs = np.array(downscaled_freqs)
 
 # Create a generator since full array is too large
-tonotopic_projections_gen = (tonotopic_maps * freq[:, np.newaxis, np.newaxis] for freq in downscaled_freqs)
+tonotopic_projections = np.array([tonotopic_maps * freq[:, np.newaxis, np.newaxis] for freq in downscaled_freqs])
+
+pl.gif_projections(tonotopic_projections)
+
 
 # pl.gif_projections(tonotopic_projections_gen)
 
