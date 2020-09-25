@@ -110,14 +110,14 @@ tonotopic_maps = np.load(os.path.join(paths.path2Data, 'INT_Sebmice_alignedtohor
 tonotopic_maps = downscale_tmaps(tonotopic_maps, block_size=(4, 4))
 
 # Remove weighted map at the end
-tonotopic_maps = tonotopic_maps[:-1, :, :]
+tonotopic_maps = tonotopic_maps[1:-1, :, :]
 
 # If sample is in stereo take only one track
 if sample.ndim > 1:
 	sample = np.transpose(sample[:-len(sample)/2, 0])
 
 # Visualize data through waveplot
-pl.waveplot(sample, samplerate)
+# pl.waveplot(sample, samplerate)
 
 # Perform Fourier transform and plotting
 # fft = fast_fourier(sample, samplerate)
@@ -125,7 +125,7 @@ pl.waveplot(sample, samplerate)
 
 # Compute spectrogram
 specgram, frequencies, times = spectro(sample, samplerate)
-pl.spectrogram(specgram, frequencies, times)
+# pl.spectrogram(specgram, frequencies, times)
 
 # Create placeholder for spatial frequency masks and selectivity vector
 amplitude_mask = create_amplitude_mask(params.freq_resolution, random=True)
@@ -137,7 +137,7 @@ magnitude_indexs = [np.where(np.logical_and(frequencies >= params.freqs[i], freq
 					for i, fr in enumerate(params.freqs[:-1])]
 
 downscaled_freqs = []
-for i, freq in tqdm(enumerate(freq_series)):
+for i, freq in enumerate(freq_series):
 	# Min max normalization of magnitude frequencies
 	if np.max(freq) > 0:
 		freq = (freq - np.min(freq))/(np.max(freq) - np.min(freq))
