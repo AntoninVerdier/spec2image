@@ -57,16 +57,16 @@ def gif_projections(tmaps):
 
 	ims = []
 	for t in range(tmaps.shape[0]):
-		im0 = axs[0, 0].imshow(tmaps[t, 0, :, :], cmap='gray')
-		im1 = axs[0, 1].imshow(tmaps[t, 1, :, :], cmap='gray')
-		im2 = axs[1, 0].imshow(tmaps[t, 2, :, :], cmap='gray')
+		im0 = axs[0].imshow(tmaps[t, 0, :, :], cmap='gray')
+		im1 = axs[1].imshow(tmaps[t, 1, :, :], cmap='gray')
+		im2 = axs[2].imshow(tmaps[t, 2, :, :], cmap='gray')
 		#im3 = axs[1, 1].imshow(tmaps[t, 3, :, :], cmap='gray')
 		ims.append([im0, im1, im2])
 
 	ani = animation.ArtistAnimation(fig, ims, interval=100, blit=False,
 	                                repeat_delay=1000)
 
-	ani.save('animation.gif', writer='imagemagick', fps=30)
+	ani.save(os.path.join(paths.path2Output, 'animation.gif'), writer='imagemagick', fps=30)
 
 	# fig, axs = plt.subplots(2, 2)
 

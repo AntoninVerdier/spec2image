@@ -1,4 +1,5 @@
 import os 
+import math
 import scipy
 import librosa
 from librosa import load, display
@@ -133,8 +134,12 @@ amplitude_mask = create_amplitude_mask(params.freq_resolution, random=True)
 # Extract frequencies for a given time
 freq_series = [specgram[:, i] for i in range(specgram.shape[1])]
 
-magnitude_indexs = [np.where(np.logical_and(frequencies >= params.freqs[i], frequencies < params.freqs[i+1])) 
-					for i, fr in enumerate(params.freqs[:-1])]
+windows = [signal.gaussian(math.log(f/1000, 2)*1000, math.log(f/1000, 2)*150) for f in params.freqs]
+
+idxs = [np.where(np.logical_and(frequencies >= params.freqs[i]-len(win)/2, frequencies < params.freqs[i]+len(win)/2)) 
+					for i, win in enumerate(windows)]
+
+win_idxs = [np.array(frequencies[idx] - np.min(frequencies[idx])).astype(int) for idx in idxs]
 
 downscaled_freqs = []
 for i, freq in enumerate(freq_series):
@@ -142,7 +147,8 @@ for i, freq in enumerate(freq_series):
 	if np.max(freq) > 0:
 		freq = (freq - np.min(freq))/(np.max(freq) - np.min(freq))
 
-	downscaled_freqs.append([np.sum(freq[idx]) for idx in magnitude_indexs])
+	downscaled_freqs.append([np.sum(freq[idxs[i]] * win[win_idxs[i]]) for i, win in enumerate(windows)])
+
 downscaled_freqs = np.array(downscaled_freqs)
 
 # Create a generator since full array is too large
