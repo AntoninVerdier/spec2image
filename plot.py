@@ -55,6 +55,15 @@ def spectrogram(spectrogram, time=None, frequencies=None):
 def gif_projections(tmaps):
 	fig, axs = plt.subplots(1, 3)
 
+	axs[0].set_title('4kHz')
+	axs[1].set_title('16kHz')
+	axs[2].set_title('32kHz')
+
+	axs[0].axis('off')
+	axs[1].axis('off')
+	axs[2].axis('off')
+
+
 	ims = []
 	for t in range(tmaps.shape[0]):
 		im0 = axs[0].imshow(tmaps[t, 0, :, :], cmap='gray', vmin=0, vmax=1)
@@ -67,43 +76,6 @@ def gif_projections(tmaps):
 	                                repeat_delay=1000)
 
 	ani.save(os.path.join(paths.path2Output, 'animation.gif'), writer='imagemagick', fps=30)
-
-	# fig, axs = plt.subplots(2, 2)
-
-	# ims = []
-	# for t in range(tmaps.shape[0]):
-	# 	axs[0, 0].imshow(tmaps[t, 0, :, :], cmap='gray')
-	# 	axs[0, 1].imshow(tmaps[t, 1, :, :], cmap='gray')
-	# 	axs[1, 0].imshow(tmaps[t, 2, :, :], cmap='gray')
-	# 	axs[1, 1].imshow(tmaps[t, 3, :, :], cmap='gray')
-	# 	ims.append([axs])
-
-	# ani = animation.ArtistAnimation(fig, ims, interval=100, blit=False,
-	#                                 repeat_delay=1000)
-
-	# ani.save('animation.gif', writer='imagemagick')
-	# plt.show()
-
-	# fig = plt.figure()
-
-	# ims = []
-	# for image in gen:
-	#     im = plt.imshow(image[0, :, :], animated=True, cmap="Greys")
-	#     plt.axis("off")
-	#     ims.append([im])
-
-	# ani = animation.ArtistAnimation(fig, ims, interval=100, blit=False,
-	#                                 repeat_delay=1000)
-# # print(tonotopic_maps)
-# print(tonotopic_maps.shape)
-
-
-# for i in range(5):
-# 	print(np.max(tonotopic_maps[i]))
-# 	plt.imshow(tonotopic_maps[0, :, :], cmap='gray')
-# 	plt.show()
-# 	plt.close()
-
 
 
 
