@@ -113,6 +113,10 @@ tonotopic_maps = downscale_tmaps(tonotopic_maps, block_size=(4, 4))
 # Remove weighted map at the end
 tonotopic_maps = tonotopic_maps[1:-1, :, :]
 
+for i, tmap in enumerate(tonotopic_maps):
+	tonotopic_maps[i] = (tmap -np.min(tmap))/(np.max(tmap) - np.min(tmap))
+
+
 # If sample is in stereo take only one track
 if sample.ndim > 1:
 	sample = np.transpose(sample[:-len(sample)/2, 0])
@@ -144,12 +148,13 @@ win_idxs = [np.array(frequencies[idx] - np.min(frequencies[idx])).astype(int) fo
 downscaled_freqs = []
 for i, freq in enumerate(freq_series):
 	# Min max normalization of magnitude frequencies
-	if np.max(freq) > 0:
-		freq = (freq - np.min(freq))/(np.max(freq) - np.min(freq))
+	#if np.max(freq) > 0:
+	#	freq = (freq - np.min(freq))/(np.max(freq) - np.min(freq))
 
 	downscaled_freqs.append([np.sum(freq[idxs[i]] * win[win_idxs[i]]) for i, win in enumerate(windows)])
 
 downscaled_freqs = np.array(downscaled_freqs)
+downscaled_freqs = downscaled_freqs/np.max(downscaled_freqs)
 
 # Create a generator since full array is too large
 tonotopic_projections = np.array([tonotopic_maps * freq[:, np.newaxis, np.newaxis] for freq in downscaled_freqs])

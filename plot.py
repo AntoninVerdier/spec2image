@@ -57,9 +57,9 @@ def gif_projections(tmaps):
 
 	ims = []
 	for t in range(tmaps.shape[0]):
-		im0 = axs[0].imshow(tmaps[t, 0, :, :], cmap='gray')
-		im1 = axs[1].imshow(tmaps[t, 1, :, :], cmap='gray')
-		im2 = axs[2].imshow(tmaps[t, 2, :, :], cmap='gray')
+		im0 = axs[0].imshow(tmaps[t, 0, :, :], cmap='gray', vmin=0, vmax=1)
+		im1 = axs[1].imshow(tmaps[t, 1, :, :], cmap='gray', vmin=0, vmax=1)
+		im2 = axs[2].imshow(tmaps[t, 2, :, :], cmap='gray', vmin=0, vmax=1)
 		#im3 = axs[1, 1].imshow(tmaps[t, 3, :, :], cmap='gray')
 		ims.append([im0, im1, im2])
 
