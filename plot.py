@@ -77,6 +77,45 @@ def gif_projections(tmaps):
 
 	ani.save(os.path.join(paths.path2Output, 'animation.gif'), writer='imagemagick', fps=30)
 
+def figure_1(tmaps, spectro, sample, samplerate, window_ms, overlap):
+	window_size = int(window_ms * samplerate * 0.001)
+	overlap_size = overlap * 0.01* window_size
+
+
+
+	fig = plt.figure(constrained_layout=True)
+	gs = fig.add_gridspec(3, 3)
+	
+	f_spe = fig.add_subplot(gs[0:2, :2])
+	f_spe.set_title('Spectrogram')
+	f_spe.specgram(sample, Fs=samplerate, NFFT=window_size, noverlap=overlap_size)
+
+	f_wav = fig.add_subplot(gs[-1, :])
+	f_wav.set_title('Waveplot')
+	
+	display.waveplot(y=sample, sr=samplerate)
+	
+	f_wav.set_xlabel('Time (sec)')
+	f_wav.set_ylabel('Amplitude')
+
+	f_pro1 = fig.add_subplot(gs[0, -1])
+	f_pro1.set_title('Proj')
+
+	f_pro2 = fig.add_subplot(gs[1, -1])
+	f_pro2.imshow(tmaps[180], cmap='gray')
+	f_pro2.set_title('Proj')
+
+	ims = []
+	for t in tmaps:
+		im0 = f_pro1.imshow(t, cmap='gray', vmin=0, vmax=1)
+		ims.append([im0])
+	
+	ani = animation.ArtistAnimation(fig, ims, interval=100, blit=False,
+	                                repeat_delay=1000)
+
+	
+	ani.save(os.path.join(paths.path2Output, 'animation.gif'), writer='imagemagick', fps=30)
+
 
 
 
