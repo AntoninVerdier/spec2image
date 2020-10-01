@@ -20,7 +20,7 @@ class Sound():
 		time = np.arange(sample)
 		pure_tone = np.sin(2 * frequency * int(frequency) * time / samplerate)
 
-		wavfile.write(os.path.join('../Samples/', 'simple_freq'), samplerate, pure_tone)
+		wavfile.write(os.path.join('../Samples/', 'simple_freq.wav'), samplerate, pure_tone)
 		
 
 	def freq_modulation():
