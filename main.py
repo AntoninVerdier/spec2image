@@ -16,9 +16,17 @@ from skimage.measure import block_reduce
 
 import plot as pl 
 import settings as sett
+from functions import Sample as samp
 
 paths = sett.paths()
 params = sett.parameters()
+Sound = samp.Sound()
+
+Sound.simple_freq(440)
+
+
+def create_sine_up(time_s=10):
+	time = np.arange()
 
 
 def create_pure_tone():
@@ -32,40 +40,6 @@ def fast_fourier(sample, samplerate):
 	fft = scipy.fft(sample)
 
 	return fft
-
-def old_spectrogram(sample, samplerate, window_ms=20, stride_ms=10, max_freq=4000, eps=1e-14):
-	# Test function, do not use
-	window_size = int(window_ms * samplerate * 0.001)
-	stride_size = int(stride_ms * samplerate * 0.001)
-
-	# Truncate signal
-	truncate_size = (len(sample) - window_size) % stride_size
-	sample = sample[:len(sample) - truncate_size]
-
-	nshape = (window_size, (len(sample) - window_size) // stride_size + 1)
-	nstrides = (sample.strides[0], sample.strides[0] * stride_size)
-
-	windows = np.lib.stride_tricks.as_strided(sample, shape=nshape, strides=nstrides)
-
-	assert np.all(windows[:, 1] == sample[stride_size:(stride_size + window_size)])
-
-	# Window weighting, square fft, scaling
-	weighting = np.hanning(window_size)[:, None]
-
-	fft = np.fft.rfft(windows * weighting, axis=0)
-	fft = np.absolute(fft)
-	fft = fft**2
-
-	scale = np.sum(weighting**2) * samplerate
-	fft[1:-1, :] *= (2.0 / scale)
-	fft[(0, -1), :] /= scale 
-
-	freqs = samplerate / window_size * np.arange(fft.shape[0])
-
-	ind = np.where(freqs <= max_freq)[0][-1] + 1
-	specgram = np.log(fft[:ind, :] + eps)
-
-	return specgram
 
 def implant_projection(tmaps):
 	# Average stimulation pattern over frequencies to get weighted map
@@ -95,23 +69,6 @@ def spectro(sample, samplerate, window_ms=20, windows_ms=20, overlap=50):
 	return spectrum, frequencies, times
 
 
-def create_spatial_masks(size, res, random=False):
-	if random:
-		spatial_tensor = np.random.rand(size, size, res)
-	else:
-		spatial_tensor = np.zeros((size, size, res))
-
-	return spatial_tensor
-
-
-def create_amplitude_mask(res, random=False):
-	if random:
-		amplitude_mask = np.random.rand(res)
-	else:
-		amplitude_mask = np.ones(res)
-
-	return amplitude_mask
-
 def tonotopic_map(idx, tmap, freqs):
 	return tmap * freqs[idx][:, np.newaxis, np.newaxis]
 
@@ -122,9 +79,6 @@ def downscale_tmaps(tmaps, block_size=(4, 4)):
 		tmaps_reduced.append(tmap_reduced)
 
 	return np.array(tmaps_reduced)
-
-
-
 
 #Extract data
 sample, samplerate = librosa.load(os.path.join(paths.path2Sample, 'tones.wav'),
@@ -157,9 +111,6 @@ if sample.ndim > 1:
 # Compute spectrogram
 specgram, frequencies, times = spectro(sample, samplerate)
 # pl.spectrogram(specgram, frequencies, times)
-
-# Create placeholder for spatial frequency masks and selectivity vector
-amplitude_mask = create_amplitude_mask(params.freq_resolution, random=True)
 
 # Extract frequencies for a given time
 freq_series = [specgram[:, i] for i in range(specgram.shape[1])]
