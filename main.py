@@ -134,9 +134,9 @@ downscaled_freqs = downscaled_freqs/np.max(downscaled_freqs)
 
 # Create a generator since full array is too large
 tonotopic_projections = np.array([tonotopic_maps * freq[:, np.newaxis, np.newaxis] for freq in downscaled_freqs])
-tmaps = implant_projection(tonotopic_projections)
+projection = implant_projection(tonotopic_projections)
 
-pl.figure_1(tmaps, spectro, sample, samplerate, 20, 50)
+pl.figure_1(projection, tonotopic_projections, spectro, sample, samplerate, 20, 50)
 
 # pl.gif_projections(tonotopic_projections)
 

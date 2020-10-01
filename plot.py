@@ -5,6 +5,9 @@ import numpy as np
 from librosa import display 
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+from matplotlib import rcParams
+
+from tqdm import tqdm
 
 import settings as sett 
 paths = sett.paths()
@@ -74,17 +77,16 @@ def gif_projections(tmaps):
 
 	ani = animation.ArtistAnimation(fig, ims, interval=100, blit=False,
 	                                repeat_delay=1000)
-
 	ani.save(os.path.join(paths.path2Output, 'animation.gif'), writer='imagemagick', fps=30)
 
-def figure_1(tmaps, spectro, sample, samplerate, window_ms, overlap):
+def figure_1(projection, tmaps, spectro, sample, samplerate, window_ms, overlap):
 	window_size = int(window_ms * samplerate * 0.001)
 	overlap_size = overlap * 0.01* window_size
 
 
 
 	fig = plt.figure(constrained_layout=True)
-	gs = fig.add_gridspec(3, 3)
+	gs = fig.add_gridspec(3, 4)
 	
 	f_spe = fig.add_subplot(gs[0:2, :2])
 	f_spe.set_title('Spectrogram')
@@ -97,25 +99,28 @@ def figure_1(tmaps, spectro, sample, samplerate, window_ms, overlap):
 	
 	f_wav.set_xlabel('Time (sec)')
 	f_wav.set_ylabel('Amplitude')
+	f_wav.set_xlim(1, 1.2)
 
-	f_pro1 = fig.add_subplot(gs[0, -1])
-	f_pro1.set_title('Proj')
+	f_pro1 = fig.add_subplot(gs[0, -2])
+	f_pro1.set_title('4kHz')
 
-	f_pro2 = fig.add_subplot(gs[1, -1])
-	f_pro2.imshow(tmaps[15], cmap='gray')
-	f_pro2.set_title('Proj')
+	f_pro2 = fig.add_subplot(gs[1, -2])
+	f_pro2.set_title('16kHz')
+
+	f_pro3 = fig.add_subplot(gs[0, -1])
+	f_pro3.set_title('32kHz')
 
 	ims = []
-	for t in tmaps:
-		im0 = f_pro1.imshow(t, cmap='gray', vmin=0, vmax=1)
-		ims.append([im0])
+	for t in tqdm(range(tmaps.shape[0])):
+		im0 = f_pro1.imshow(projection[t], cmap='gray', vmin=0, vmax=1)
+		im1 = f_pro2.imshow(tmaps[t, 1, :, :], cmap='gray')
+		im2 = f_pro3.imshow(tmaps[t, 2, :, :], cmap='gray')
+		ims.append([im0, im1, im2])
 	
 	ani = animation.ArtistAnimation(fig, ims, interval=100, blit=False,
 	                                repeat_delay=1000)
 
-	
-	ani.save(os.path.join(paths.path2Output, 'animation.gif'), writer='imagemagick', fps=30)
-
+	ani.save(os.path.join(paths.path2Output, 'animation.mp4'), 'ffmpeg_file', fps=30)
 
 
 
