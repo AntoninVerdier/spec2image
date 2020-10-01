@@ -18,7 +18,7 @@ class Sound():
 		"""
 		sample = duration * 0.001 * samplerate
 		time = np.arange(sample)
-		pure_tone = np.sin(2 * frequency * int(frequency) * time / samplerate)
+		pure_tone = np.sin(2 * np.pi * frequency * int(frequency) * time / samplerate)
 
 		wavfile.write(os.path.join('../Samples/', 'simple_freq.wav'), samplerate, pure_tone)
 		
