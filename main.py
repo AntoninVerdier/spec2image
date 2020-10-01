@@ -22,9 +22,6 @@ paths = sett.paths()
 params = sett.parameters()
 sound = samp.Sound()
 
-modulation = sound.amplitude_modulation(4000, 20)
-
-
 def create_sine_up(time_s=10):
 	time = np.arange()
 
@@ -81,7 +78,9 @@ def downscale_tmaps(tmaps, block_size=(4, 4)):
 	return np.array(tmaps_reduced)
 
 #Extract data
-sample, samplerate = librosa.load(os.path.join(paths.path2Sample, 'amplitude_modulation.wav'),
+modulation = sound.freq_noise(1000, 0.3)
+
+sample, samplerate = librosa.load(os.path.join(paths.path2Sample, 'freq_noise.wav'),
 								  sr=None, mono=True, offset=0.0, duration=None)
 
 tonotopic_maps = np.load(os.path.join(paths.path2Data, 'INT_Sebmice_alignedtohorizon.npy'))

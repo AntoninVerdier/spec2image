@@ -52,6 +52,14 @@ class Sound():
 
 		return modulated_signal
 
+	def freq_noise(self, freq, noise_vol, duration=2500, samplerate=80000):
+		"""Create a pure tone with noise in the background of increasing intensity
+		"""
+		sample = int(duration * 0.001) * samplerate
+		time = np.arange(sample)
+		noise = np.array([noise_vol * np.random.random() for t in time])
+		noisy_signal = noise + np.array([np.sin(2 * np.pi * freq * t / samplerate) for t in time])
 
-		
-		
+		wavfile.write(os.path.join('../Samples/', 'freq_noise.wav'), samplerate, noisy_signal)
+
+		return noisy_signal
