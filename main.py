@@ -78,9 +78,9 @@ def downscale_tmaps(tmaps, block_size=(4, 4)):
 	return np.array(tmaps_reduced)
 
 #Extract data
-modulation = sound.multi_freqs([110, 195, 329])
+#modulation = sound.multi_freqs([110, 195, 329])
 
-sample, samplerate = librosa.load(os.path.join(paths.path2Sample, 'freq_noise.wav'),
+sample, samplerate = librosa.load(os.path.join(paths.path2Sample, 'example_pipeline.wav'),
 								  sr=None, mono=True, offset=0.0, duration=None)
 
 tonotopic_maps = np.load(os.path.join(paths.path2Data, 'INT_Sebmice_alignedtohorizon.npy'))

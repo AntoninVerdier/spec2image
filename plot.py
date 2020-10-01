@@ -102,7 +102,7 @@ def figure_1(tmaps, spectro, sample, samplerate, window_ms, overlap):
 	f_pro1.set_title('Proj')
 
 	f_pro2 = fig.add_subplot(gs[1, -1])
-	f_pro2.imshow(tmaps[180], cmap='gray')
+	f_pro2.imshow(tmaps[15], cmap='gray')
 	f_pro2.set_title('Proj')
 
 	ims = []

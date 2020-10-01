@@ -12,8 +12,25 @@ class Sound():
 	Allow experimenter to generate tone paradigm
 	"""
 	def __init__(self, samplerate=80000):
-		self.freq = []
+		self.signal = None
+		self.freq = None
 		self.samplerate = samplerate
+
+	def __add__(self, other):
+		"""Define how to assemble generated sound
+		"""
+		assert self.samplerate == other.samplerate, 'Signals must have the same samplerate'
+
+		newSound = Sound(samplerate=self.samplerate)
+		newSound.signal = np.concatenate((self.signal, other.signal))
+
+		return newSound
+
+	def delay(self, duration):
+		sample = int(duration * 0.001) * self.samplerate
+		self.signal = np.array(np.zeros(sample))
+
+		return self.signal
 
 	def simple_freq(self, frequency, duration=1000):
 		"""Generate a pure tone signal for a given amount of time
@@ -22,7 +39,9 @@ class Sound():
 		time = np.arange(sample)
 		pure_tone = np.sin(2 * np.pi * frequency * time / self.samplerate)
 
-		wavfile.write(os.path.join('../Samples/', 'simple_freq.wav'), self.samplerate, pure_tone)
+		# wavfile.write(os.path.join('../Samples/', 'simple_freq.wav'), self.samplerate, pure_tone)
+
+		self.signal = np.array(pure_tone)
 
 		return pure_tone
 
@@ -35,7 +54,9 @@ class Sound():
 		frequencies = np.linspace(start_freq, end_freq, sample)
 		modulation = [np.sin(2 * np.pi * f * t / self.samplerate) for (f, t) in zip(np.linspace(start_freq, end_freq, sample), time)]
 
-		wavfile.write(os.path.join('../Samples/', 'freq_modulation.wav'), self.samplerate, np.array(modulation))
+		# wavfile.write(os.path.join('../Samples/', 'freq_modulation.wav'), self.samplerate, np.array(modulation))
+
+		self.signal = np.array(modulation)
 
 		return modulation
 		
@@ -47,8 +68,9 @@ class Sound():
 		amplitude = np.sin(2 * np.pi * am_freq * time / self.samplerate)
 		modulated_signal = [A * np.sin(2* np.pi * freq * t / self.samplerate) for A, t in zip(amplitude, time)]
 		
-		wavfile.write(os.path.join('../Samples/', 'amplitude_modulation.wav'), self.samplerate, np.array(modulated_signal))
+		# wavfile.write(os.path.join('../Samples/', 'amplitude_modulation.wav'), self.samplerate, np.array(modulated_signal))
 
+		self.signal = np.array(modulated_signal)
 
 		return modulated_signal
 
@@ -62,6 +84,8 @@ class Sound():
 
 		wavfile.write(os.path.join('../Samples/', 'freq_noise.wav'), self.samplerate, noisy_signal)
 
+		self.signal = np.array(noisy_signal)
+
 		return noisy_signal
 
 	def multi_freqs(self, freqs, duration=2500):
@@ -71,6 +95,8 @@ class Sound():
 		time = np.arange(sample)
 		harmonics = np.sum(np.array([[np.sin(2 * np.pi * freq * t / self.samplerate) for t in time] for freq in freqs]), axis=0)
 
-		wavfile.write(os.path.join('../Samples/', 'freq_noise.wav'), self.samplerate, harmonics)
+		wavfile.write(os.path.join('../Samples/', 'harmonics.wav'), self.samplerate, harmonics)
+
+		self.signal = np.array(harmonics)
 
 		return harmonics
