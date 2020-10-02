@@ -16,11 +16,10 @@ from skimage.measure import block_reduce
 
 import plot as pl 
 import settings as sett
-from functions import Sample as samp
+from functions.Sample import Sound
 
 paths = sett.paths()
 params = sett.parameters()
-sound = samp.Sound()
 
 def create_sine_up(time_s=10):
 	time = np.arange()
@@ -77,10 +76,23 @@ def downscale_tmaps(tmaps, block_size=(4, 4)):
 
 	return np.array(tmaps_reduced)
 
-#Extract data
-#modulation = sound.multi_freqs([110, 195, 329])
+# Generate sample pipeline
+delay1 = Sound()
+delay1.delay(1000)
 
-sample, samplerate = librosa.load(os.path.join(paths.path2Sample, 'example_pipeline.wav'),
+
+stimulus1 = Sound()
+stimulus1.multi_freqs([110, 195, 329], duration=3000)
+
+delay2 = Sound()
+delay2.delay(500)
+
+pipeline = delay1 + stimulus1 + delay2
+pipeline.name = 'pipeline_test'
+pipeline.save_wav()
+#Extract data
+
+sample, samplerate = librosa.load(os.path.join(paths.path2Sample, 'pipeline_test.wav'),
 								  sr=None, mono=True, offset=0.0, duration=None)
 
 tonotopic_maps = np.load(os.path.join(paths.path2Data, 'INT_Sebmice_alignedtohorizon.npy'))

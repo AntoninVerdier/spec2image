@@ -12,6 +12,7 @@ class Sound():
 	Allow experimenter to generate tone paradigm
 	"""
 	def __init__(self, samplerate=80000):
+		self.name = 'test'
 		self.signal = None
 		self.freq = None
 		self.samplerate = samplerate
@@ -20,6 +21,7 @@ class Sound():
 		"""Define how to assemble generated sound
 		"""
 		assert self.samplerate == other.samplerate, 'Signals must have the same samplerate'
+		assert (self.signal is not None) & (other.signal is not None), 'Signals must be defined' 
 
 		newSound = Sound(samplerate=self.samplerate)
 		newSound.signal = np.concatenate((self.signal, other.signal))
@@ -30,7 +32,7 @@ class Sound():
 		sample = int(duration * 0.001) * self.samplerate
 		self.signal = np.array(np.zeros(sample))
 
-		return self.signal
+		# return self.signal
 
 	def simple_freq(self, frequency, duration=1000):
 		"""Generate a pure tone signal for a given amount of time
@@ -43,7 +45,7 @@ class Sound():
 
 		self.signal = np.array(pure_tone)
 
-		return pure_tone
+		# return pure_tone
 
 	def freq_modulation(self, start_freq, end_freq, duration=2500):
 		"""Generate a pure tone signal for a given amount of time
@@ -58,7 +60,7 @@ class Sound():
 
 		self.signal = np.array(modulation)
 
-		return modulation
+		# return modulation
 		
 	def amplitude_modulation(self, freq, am_freq, duration=5000):
 		"""Generate an aplitude_modulated tone at a ref frequency
@@ -72,7 +74,7 @@ class Sound():
 
 		self.signal = np.array(modulated_signal)
 
-		return modulated_signal
+		# return modulated_signal
 
 	def freq_noise(self, freq, noise_vol, duration=2500):
 		"""Create a pure tone with noise in the background of increasing intensity
@@ -86,7 +88,7 @@ class Sound():
 
 		self.signal = np.array(noisy_signal)
 
-		return noisy_signal
+		# return noisy_signal
 
 	def multi_freqs(self, freqs, duration=2500):
 		""" used to create harmonics
@@ -99,4 +101,15 @@ class Sound():
 
 		self.signal = np.array(harmonics)
 
-		return harmonics
+		# return harmonics
+
+	def save_wav(self, name=None):
+		""" Save the signal as a .wav file
+		"""
+		if name is None:
+			name = self.name
+
+		assert self.signal is not None, 'You must define a signal to save'
+		wavfile.write(os.path.join('../Samples/{}.wav'.format(name)), self.samplerate, self.signal)
+
+
