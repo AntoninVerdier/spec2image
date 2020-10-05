@@ -89,8 +89,6 @@ class Sound():
 		time = np.arange(sample)
 		pure_tone = np.sin(2 * np.pi * frequency * time / self.samplerate)
 
-		# wavfile.write(os.path.join('../Samples/', 'simple_freq.wav'), self.samplerate, pure_tone)
-
 		self.signal = np.array(pure_tone)
 		self.freq = {'simple' : frequency}
 
@@ -113,8 +111,6 @@ class Sound():
 		time = np.arange(sample)
 		frequencies = np.linspace(start_freq, end_freq, sample)
 		modulation = [np.sin(2 * np.pi * f * t / self.samplerate) for (f, t) in zip(np.linspace(start_freq, end_freq, sample), time)]
-
-		# wavfile.write(os.path.join('../Samples/', 'freq_modulation.wav'), self.samplerate, np.array(modulation))
 
 		self.signal = np.array(modulation)
 		self.freq = {'start_freq': start_freq, 'end_freq': end_freq}
@@ -139,8 +135,6 @@ class Sound():
 		amplitude = np.sin(2 * np.pi * am_freq * time / self.samplerate)
 		modulated_signal = [A * np.sin(2* np.pi * freq * t / self.samplerate) for A, t in zip(amplitude, time)]
 		
-		# wavfile.write(os.path.join('../Samples/', 'amplitude_modulation.wav'), self.samplerate, np.array(modulated_signal))
-
 		self.signal = np.array(modulated_signal)
 		self.freq = {'freq': frequency, 'am_freq': am_freq}
 
@@ -163,8 +157,6 @@ class Sound():
 		noise = np.array([noise_vol * np.random.random() for t in time])
 		noisy_signal = noise + np.array([np.sin(2 * np.pi * freq * t / self.samplerate) for t in time])
 
-		wavfile.write(os.path.join('../Samples/', 'freq_noise.wav'), self.samplerate, noisy_signal)
-
 		self.signal = np.array(noisy_signal)
 		self.freq = {'freq': freq, 'noise_vol': noise_vol}
 
@@ -183,8 +175,6 @@ class Sound():
 		sample = int(duration * 0.001) * self.samplerate
 		time = np.arange(sample)
 		harmonics = np.sum(np.array([[np.sin(2 * np.pi * freq * t / self.samplerate) for t in time] for freq in freqs]), axis=0)
-
-		wavfile.write(os.path.join('../Samples/', 'harmonics.wav'), self.samplerate, harmonics)
 
 		self.signal = np.array(harmonics)
 		self.freq = {'freq{}'.format(i): f for i, f in enumerate(freqs)}
