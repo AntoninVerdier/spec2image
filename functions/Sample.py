@@ -70,8 +70,9 @@ class Sound():
 		duration : int
 			Duration of the delay in ms
 		"""
-		sample = int(duration * 0.001) * self.samplerate
+		sample = int(duration * 0.001 * self.samplerate)
 		self.signal = np.array(np.zeros(sample))
+		print(sample)
 
 		# return self.signal
 
@@ -85,7 +86,7 @@ class Sound():
 		duration : int, optional
 			Duration of the tone in ms
 		"""
-		sample = int(duration * 0.001) * self.samplerate
+		sample = int(duration * 0.001 * self.samplerate)
 		time = np.arange(sample)
 		pure_tone = np.sin(2 * np.pi * frequency * time / self.samplerate)
 
@@ -107,10 +108,10 @@ class Sound():
 			Duration of the sound sample in ms
 
 		"""
-		sample = int(duration) * 0.001 * self.samplerate
+		sample = int(duration * 0.001 * self.samplerate)
 		time = np.arange(sample)
 		frequencies = np.linspace(start_freq, end_freq, sample)
-		modulation = [np.sin(2 * np.pi * f * t / self.samplerate) for (f, t) in zip(np.linspace(start_freq, end_freq, sample), time)]
+		modulation = [np.sin(2 * np.pi * f * t / self.samplerate) for (f, t) in zip(np.linspace(start_freq, end_freq, sample), time)] # or log add option
 
 		self.signal = np.array(modulation)
 		self.freq = {'start_freq': start_freq, 'end_freq': end_freq}
@@ -130,7 +131,7 @@ class Sound():
 		duration : int
 			Duration of the soudn sample in ms
 		"""
-		sample = int(duration * 0.001) * self.samplerate
+		sample = int(duration * 0.001 * self.samplerate)
 		time = np.arange(sample)
 		amplitude = np.sin(2 * np.pi * am_freq * time / self.samplerate)
 		modulated_signal = [A * np.sin(2* np.pi * freq * t / self.samplerate) for A, t in zip(amplitude, time)]
@@ -152,9 +153,9 @@ class Sound():
 		duration : int, optional
 			Duration of the sound sample in ms
 		"""
-		sample = int(duration * 0.001) * self.samplerate
+		sample = int(duration * 0.001 * self.samplerate)
 		time = np.arange(sample)
-		noise = np.array([noise_vol * np.random.random() for t in time])
+		noise = noise_vol * np.random.normal(0, 1, len(time))
 		noisy_signal = noise + np.array([np.sin(2 * np.pi * freq * t / self.samplerate) for t in time])
 
 		self.signal = np.array(noisy_signal)
@@ -172,7 +173,7 @@ class Sound():
 		duration : int, optional
 
 		"""
-		sample = int(duration * 0.001) * self.samplerate
+		sample = int(duration * 0.001 * self.samplerate)
 		time = np.arange(sample)
 		harmonics = np.sum(np.array([[np.sin(2 * np.pi * freq * t / self.samplerate) for t in time] for freq in freqs]), axis=0)
 

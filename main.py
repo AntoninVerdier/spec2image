@@ -69,7 +69,7 @@ def implant_projection(tmaps):
 
 	return tmap_implant
 
-def spectro(sample, samplerate, window_ms=20, windows_ms=20, overlap=50):
+def spectro(sample, samplerate, window_ms=20, overlap=50):
 	window_size = int(window_ms * samplerate * 0.001)
 	overlap_size = overlap * 0.01* window_size
 
@@ -78,6 +78,8 @@ def spectro(sample, samplerate, window_ms=20, windows_ms=20, overlap=50):
 
 
 	plt.title('Spectrogram of sound sample')
+	plt.yscale('log')
+	plt.ylim((1, int(samplerate / 2)))
 	plt.xlabel('Time (sec)')
 	plt.ylabel('Frequency (Hz)')
 
@@ -99,7 +101,7 @@ delay1 = Sound()
 delay1.delay(1000)
 
 stimulus1 = Sound()
-stimulus1.multi_freqs([110, 195, 329], duration=3000)
+stimulus1.freq_noise(1000, 0.8, duration=3000)
 
 delay2 = Sound()
 delay2.delay(500)
@@ -122,7 +124,7 @@ tonotopic_maps = tonotopic_maps[1:-1, :, :]
 
 # Normalization of tonotopic maps and inversion (bright spots should be of interest)
 for i, tmap in enumerate(tonotopic_maps):
-	tonotopic_maps[i] = (tmap -np.min(tmap))/(np.max(tmap) - np.min(tmap))
+	tonotopic_maps[i] = (tmap - np.min(tmap))/(np.max(tmap) - np.min(tmap))
 	tonotopic_maps[i] = 1 - tonotopic_maps[i]
 
 
@@ -131,7 +133,7 @@ if sample.ndim > 1:
 	sample = np.transpose(sample[:-len(sample)/2, 0])
 
 # Visualize data through waveplot
-# pl.waveplot(sample, samplerate)
+pl.waveplot(sample, samplerate)
 
 # Perform Fourier transform and plotting
 # fft = fast_fourier(sample, samplerate)
@@ -165,7 +167,7 @@ tonotopic_projections = np.array([tonotopic_maps * mag[:, np.newaxis, np.newaxis
 # Downscale projection to match implants' characteristics
 projections = implant_projection(tonotopic_projections)
 
-pl.figure_1(projection, tonotopic_projections, spectro, sample, samplerate, 20, 50)
+pl.figure_1(projections, tonotopic_projections, spectro, sample, samplerate, 20, 50)
 # pl.gif_projections(tonotopic_projections)
 
 

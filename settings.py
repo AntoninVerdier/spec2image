@@ -14,3 +14,12 @@ class parameters():
 		self.size_implant = 10
 		self.freq_resolution = 4
 		self.freqs = [4e3, 16e3, 32e3]
+
+
+# Code review
+# Add amplitude
+# bruit gaussien
+# log spectrogram
+# humain x4
+# seuile carte tonotopic
+# soustraction carte tonotopic
