@@ -36,11 +36,11 @@ def rectangle_stim(tmap, min_1, min_2, n_rectangles, width_rect=0.4):
 	distance_min = math.sqrt((min_1[0] - min_2[0])**2 + (min_1[1] - min_2[1])**2)
 	
 	vector = np.array([min_2[0] - min_1[0], min_2[1] - min_1[1]])
-	vector_bin = [vector * 1 / n_rectangles * i for i in range(n_rectangles)]
+	vector_bin = [vector * 1 / n_rectangles * i for i in range(n_rectangles+1)]
 	width_rect = width_rect * distance_min
 
 	rect_stim = []
-	for i in range(n_rectangles):
+	for i in range(1, n_rectangles+1):
 		rect = np.array([[min_1[0] - width_rect + vector_bin[i-1][0], min_1[1] + vector_bin[i-1][0] + width_rect * vector[0] / vector[1]],
 					     [min_1[0] + width_rect + vector_bin[i-1][0], min_1[1] + vector_bin[i-1][0] - width_rect * vector[0] / vector[1]],
 					     [min_1[0] + width_rect + vector_bin[i][1], min_1[1] + vector_bin[i][1] - width_rect * vector[0] / vector[1]],
@@ -61,8 +61,9 @@ def rectangle_stim(tmap, min_1, min_2, n_rectangles, width_rect=0.4):
 						score += 1
 				if score == 4:
 					inside.append([int(idx), int(idy)])
+		print(len(inside))
 
-		rect_stim.append(inside)
+		rect_stim.append(np.array(inside))
 
 	return np.array(rect_stim)
 
@@ -102,9 +103,9 @@ def rectangle_stim(tmap, min_1, min_2, n_rectangles, width_rect=0.4):
 
 # inside = np.array(inside)
 rect_stim = rectangle_stim(weighted_tmap, min_4, min_32, 5)
-print(rect_stim.shape)
+print(rect_stim[0].shape)
 
-weighted_tmap[rect_stim[0, :, 1], inside[0, :, 0]] = 1
+weighted_tmap[rect_stim[2, :, 1], rect_stim[2, :, 0]] = 1
 
 
 # Script for checking
