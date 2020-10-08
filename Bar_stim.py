@@ -7,7 +7,6 @@ import scipy
 import numpy as np 
 import matplotlib.pyplot as plt 
 
-import plot as pl 
 import settings as sett
 from functions.Sample import Sound
 
@@ -61,12 +60,10 @@ def rectangle_stim(tmap, min_1, min_2, n_rectangles, width_rect=0.4):
 						score += 1
 				if score == 4:
 					inside.append([int(idx), int(idy)])
-		print(len(inside))
 
 		rect_stim.append(np.array(inside))
-
-	return np.array(rect_stim)
-
+	
+	return rect_stim
 
 
 # # Get distance between two minimum
@@ -103,15 +100,14 @@ def rectangle_stim(tmap, min_1, min_2, n_rectangles, width_rect=0.4):
 
 # inside = np.array(inside)
 rect_stim = rectangle_stim(weighted_tmap, min_4, min_32, 5)
-print(rect_stim[0].shape)
 
-weighted_tmap[rect_stim[2, :, 1], rect_stim[2, :, 0]] = 1
+for i, rect in enumerate(rect_stim):
+	weighted_tmap[rect[:, 1], rect[:, 0]] = 0.2 * i
+
 
 
 # Script for checking
-for edge in edges:
- 	plt.plot(edge[:, 0], edge[:, 1])
-plt.scatter(rect[:, 0], rect[:, 1])
+#plt.scatter(rect[:, 0], rect[:, 1])
 plt.scatter(min_4[0], min_4[1], marker='o', c='red')
 plt.scatter(min_32[0], min_32[1], marker='o', c='red')
 plt.plot([min_4[0], min_32[0]], [min_4[1], min_32[1]])
