@@ -31,13 +31,15 @@ def fast_fourier(sample, samplerate):
 
 	return fft
 
-def implant_projection(tmaps):
+def implant_projection(tmaps, single_map=False):
 	""" Downscale the final cortical stimulation to match capacitty of the implant
 
 	Parameters
 	----------
 	tmaps : array
-		Images to project to the cortex. Shape must be (time_points, frequencies, width, height)
+		Images to project to the cortex. Shape must be (time_points, maps, width, height) if singlemap=True
+	single_map : bool
+		Optional argument in case of a single tonotopic map passed as arg
 
 	Returns
 	-------
@@ -46,7 +48,8 @@ def implant_projection(tmaps):
 
 	"""
 	# Average stimulation pattern over frequencies to get weighted map
-	tmaps = np.mean(tmaps, axis=1)
+	if single_map:
+		tmaps = np.mean(tmaps, axis=1)
 	
 	width_cut = tmaps.shape[1] % params.size_implant
 	height_cut = tmaps.shape[2] % params.size_implant
@@ -54,7 +57,7 @@ def implant_projection(tmaps):
 	# Cut excess borders
 	tmaps = tmaps[:, width_cut:, height_cut:]
 
-	tmap_implant= block_reduce(tmaps, block_size=(1, tmaps.shape[1] // params.size_implant, tmaps.shape[2] // params.size_implant), func=np.mean)
+	tmap_implant = block_reduce(tmaps, block_size=(1, tmaps.shape[1] // params.size_implant, tmaps.shape[2] // params.size_implant), func=np.mean)
 
 	return tmap_implant
 
@@ -86,7 +89,6 @@ def downscale_tmaps(tmaps, block_size=(4, 4)):
 	return np.array(tmaps_reduced)
 
 def rectangle_stim(tmap4, tmap32, n_rectangles, width_rect=0.4, squared=False):
-	
 	# Get minima
 	min_1 = np.unravel_index(tmap4.argmax(), tmap4.shape)
 	min_2 = np.unravel_index(tmap32.argmax(), tmap32.shape)

@@ -72,7 +72,6 @@ class Sound():
 		"""
 		sample = int(duration * 0.001 * self.samplerate)
 		self.signal = np.array(np.zeros(sample))
-		print(sample)
 
 		# return self.signal
 

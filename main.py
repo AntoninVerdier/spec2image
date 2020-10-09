@@ -16,85 +16,14 @@ from skimage.measure import block_reduce
 
 import plot as pl 
 import settings as sett
+import processing as proc
 from functions.Sample import Sound
 
 paths = sett.paths()
 params = sett.parameters()
 
-
-def fast_fourier(sample, samplerate):
-	""" Compute a Fast Fourier Transform for visualization purposes
-
-	Parameters
-	----------
-	sample : array
-		Array containaing the raw signal
-	samplerate : int
-		Number of sample in the signal per unit of time
-
-	Returns
-	-------
-	array
-		Fast-Fourier Transform of the signal
-
-	"""
-	fft = scipy.fft(sample)
-
-	return fft
-
-def implant_projection(tmaps):
-	""" Downscale the final cortical stimulation to match capacitty of the implant
-
-	Parameters
-	----------
-	tmaps : array
-		Images to project to the cortex. Shape must be (time_points, frequencies, width, height)
-
-	Returns
-	-------
-	array
-		Images downsclaed to send to implant. Shape is (time_point, width, height)
-
-	"""
-	# Average stimulation pattern over frequencies to get weighted map
-	tmaps = np.mean(tmaps, axis=1)
-	
-	width_cut = tmaps.shape[1] % params.size_implant
-	height_cut = tmaps.shape[2] % params.size_implant
-
-	# Cut excess borders
-	tmaps = tmaps[:, width_cut:, height_cut:]
-
-	tmap_implant= block_reduce(tmaps, block_size=(1, tmaps.shape[1] // params.size_implant, tmaps.shape[2] // params.size_implant), func=np.mean)
-
-	return tmap_implant
-
-def spectro(sample, samplerate, window_ms=20, overlap=50):
-	window_size = int(window_ms * samplerate * 0.001)
-	overlap_size = overlap * 0.01* window_size
-
-	spectrum, frequencies, times, im = plt.specgram(sample, Fs=samplerate, 
-													NFFT=window_size, noverlap=overlap_size)
-
-
-	plt.title('Spectrogram of sound sample')
-	plt.yscale('log')
-	plt.ylim((1, int(samplerate / 2)))
-	plt.xlabel('Time (sec)')
-	plt.ylabel('Frequency (Hz)')
-
-	plt.savefig(os.path.join(paths.path2Output, 'sample_spectrogram.png'))
-
-
-	return spectrum, frequencies, times
-
-def downscale_tmaps(tmaps, block_size=(4, 4)):
-	tmaps_reduced = []
-	for i, tmap in enumerate(tonotopic_maps):
-		tmap_reduced = block_reduce(tmap, block_size=block_size, func=np.mean)
-		tmaps_reduced.append(tmap_reduced)
-
-	return np.array(tmaps_reduced)
+plt.rcParams['figure.figsize'] = [20, 12]
+plt.rcParams['figure.dpi'] 
 
 # Generate sample pipeline
 delay1 = Sound()
@@ -117,7 +46,7 @@ sample, samplerate = librosa.load(os.path.join(paths.path2Sample, 'pipeline_test
 tonotopic_maps = np.load(os.path.join(paths.path2Data, 'INT_Sebmice_alignedtohorizon.npy'))
 
 # Reshape tonotopic maps to 625 x 500 arrays for computation purposes
-tonotopic_maps = downscale_tmaps(tonotopic_maps, block_size=(4, 4))
+#tonotopic_maps = proc.downscale_tmaps(tonotopic_maps, block_size=(4, 4))
 
 # Remove weighted map at the end and white noise at the beginning
 tonotopic_maps = tonotopic_maps[1:-1, :, :]
@@ -125,7 +54,7 @@ tonotopic_maps = tonotopic_maps[1:-1, :, :]
 # Normalization of tonotopic maps and inversion (bright spots should be of interest)
 for i, tmap in enumerate(tonotopic_maps):
 	tonotopic_maps[i] = (tmap - np.min(tmap))/(np.max(tmap) - np.min(tmap))
-	tonotopic_maps[i] = 1 - tonotopic_maps[i]
+	tonotopic_maps[i] = 1 - tmap
 
 
 # If sample is in stereo take only one track
@@ -140,7 +69,7 @@ pl.waveplot(sample, samplerate)
 # pl.fft(sample, samplerate, fft)
 
 # Compute spectrogram
-specgram, frequencies, times = spectro(sample, samplerate)
+specgram, frequencies, times = proc.spectro(sample, samplerate)
 # pl.spectrogram(specgram, frequencies, times)
 
 # Extract frequencies for a given time
@@ -165,9 +94,37 @@ magnitudes = magnitudes/np.max(magnitudes)
 tonotopic_projections = np.array([tonotopic_maps * mag[:, np.newaxis, np.newaxis] for mag in magnitudes])
 
 # Downscale projection to match implants' characteristics
-projections = implant_projection(tonotopic_projections)
 
-pl.figure_1(projections, tonotopic_projections, spectro, sample, samplerate, 20, 50)
-# pl.gif_projections(tonotopic_projections)
+#pl.figure_1(projections, tonotopic_projections, specgram, sample, samplerate, 20, 50)
+# pl.gif_projections(tonotopic_projections
+
+rect_stim, weighted_tmap, min_4, min_32 = proc.rectangle_stim(tonotopic_maps[0], tonotopic_maps[2], 5)
+
+plt.scatter(min_4[0], min_4[1], marker='o', c='red')
+plt.scatter(min_32[0], min_32[1], marker='o', c='red')
+plt.plot([min_4[0], min_32[0]], [min_4[1], min_32[1]])
+
+for i, rect in enumerate(rect_stim):
+	weighted_tmap[rect[:, 1], rect[:, 0]] = 0.2 * i
+	plt.imshow(weighted_tmap, cmap='coolwarm')
+plt.title('Stimulation along a tonotopic axis')
+plt.savefig('update.png')
+plt.show()
+
+stimulus = []
+for i, rect in enumerate(rect_stim):
+	buffer_map = np.copy(weighted_tmap) # relpace function copy by zero_like for mask
+	buffer_map[rect[:, 0], rect[:, 1]] = 1
+	stimulus.append([buffer_map for i in range(1000)])
+stimulus = np.concatenate(stimulus, axis=0)
+
+	# Create stimulus across time
 
 
+projections = proc.implant_projection(stimulus)
+#Script for checking
+
+
+#plt.imshow(projections[1001], cmap='coolwarm')
+
+#plt.show()
