@@ -181,7 +181,7 @@ class Sound():
 
 		# return harmonics
 
-	def save_wav(self, name=None):
+	def save_wav(self, path=None, name=None):
 		""" Save the signal as a .wav file
 
 		Parameters 
@@ -189,10 +189,14 @@ class Sound():
 		name : str, optional
 			Name fo the file to save
 		"""
+		assert self.signal is not None, 'You must define a signal to save'
+
 		if name is None:
 			name = self.name
 
-		assert self.signal is not None, 'You must define a signal to save'
-		wavfile.write(os.path.join('../Samples/{}.wav'.format(name)), self.samplerate, self.signal)
+		if path is None:
+			wavfile.write(os.path.join('../Samples/{}.wav'.format(name)), self.samplerate, self.signal)
+		else:
+			wavfile.write(os.path.join(path, name + '.wav'), self.samplerate, self.signal)
 
 
