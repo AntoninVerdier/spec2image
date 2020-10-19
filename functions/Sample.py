@@ -136,7 +136,7 @@ class Sound():
 		modulated_signal = [A * np.sin(2* np.pi * freq * t / self.samplerate) for A, t in zip(amplitude, time)]
 		
 		self.signal = np.array(modulated_signal)
-		self.freq = {'freq': frequency, 'am_freq': am_freq}
+		self.freq = {'freq': freq, 'am_freq': am_freq}
 
 		# return modulated_signal
 
