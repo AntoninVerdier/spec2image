@@ -4,6 +4,7 @@ import scipy
 import numpy as np 
 import matplotlib.pyplot as plt 
 
+from scipy import signal
 from skimage.measure import block_reduce
 
 import settings as sett
@@ -134,3 +135,24 @@ def rectangle_stim(tmap4, tmap32, n_rectangles, width_rect=0.4, squared=False):
 		rect_stim.append(np.array(inside))
 	
 	return rect_stim, weighted_tmap, min_1, min_2
+
+def gaussian_windowing(specgram, frequencies):
+	freq_series = [specgram[:, i] for i in range(specgram.shape[1])]
+
+	# Define windows for gaussian windowing
+	gaussian_windows = [signal.gaussian(math.log(f/1000, 2)*1000, math.log(f/1000, 2)*150) for f in params.freqs]
+
+	# Get indices of frequencies of interest
+	freq_idxs = [np.where(np.logical_and(frequencies >= params.freqs[i]-len(win)/2, frequencies < params.freqs[i]+len(win)/2)) 
+						for i, win in enumerate(gaussian_windows)]
+	win_idxs = [np.array(frequencies[idx] - np.min(frequencies[idx])).astype(int) for idx in freq_idxs]
+
+	magnitudes = []
+	for i, freq in enumerate(freq_series):
+		magnitudes.append([np.sum(freq[freq_idxs[i]] * win[win_idxs[i]]) for i, win in enumerate(gaussian_windows)])
+
+	magnitudes = np.array(magnitudes)
+	magnitudes = magnitudes/np.max(magnitudes)
+
+	return magnitudes
+
