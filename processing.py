@@ -62,21 +62,23 @@ def implant_projection(tmaps, single_map=False):
 
 	return tmap_implant
 
-def spectro(sample, samplerate, window_ms=20, overlap=50):
+def spectro(sample, samplerate, window_ms=20, overlap=50, plot=False):
 	window_size = int(window_ms * samplerate * 0.001)
-	overlap_size = overlap * 0.01* window_size
+	overlap_size = overlap * 0.01 * window_size
 
 	spectrum, frequencies, times, im = plt.specgram(sample, Fs=samplerate, 
 													NFFT=window_size, noverlap=overlap_size)
 
 
 	plt.title('Spectrogram of sound sample')
-	plt.yscale('log')
+	#plt.yscale('log')
 	plt.ylim((1, int(samplerate / 2)))
 	plt.xlabel('Time (sec)')
 	plt.ylabel('Frequency (Hz)')
 
 	plt.savefig(os.path.join(paths.path2Output, 'sample_spectrogram.png'))
+	if plot:
+		plt.show()
 	plt.close()
 
 	return spectrum, frequencies, times

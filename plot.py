@@ -39,6 +39,7 @@ def fft(sample, samplerate, fft):
 	plt.ylabel('Magnitude')
 	
 	plt.savefig(os.path.join(paths.path2Output, 'sample_fft.png'))
+	plt.show()
 	plt.close()
 
 def spectrogram(spectrogram, time=None, frequencies=None):

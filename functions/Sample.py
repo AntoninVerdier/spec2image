@@ -2,6 +2,8 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt 
 
+import processing as proc
+
 from scipy.io import wavfile
 
 from tqdm import tqdm
@@ -75,7 +77,7 @@ class Sound():
 
 		# return self.signal
 
-	def simple_freq(self, frequency, duration=1000):
+	def simple_freq(self, frequency, duration=500):
 		"""Generate a pure tone signal for a given duration
 
 		Parameters
@@ -94,7 +96,7 @@ class Sound():
 
 		# return pure_tone
 
-	def freq_modulation(self, start_freq, end_freq, duration=2500):
+	def freq_modulation(self, start_freq, end_freq, duration=500):
 		"""Generate a signal of increase or decreasing frequencies
 
 		Parameters
@@ -108,17 +110,25 @@ class Sound():
 
 		"""
 		sample = int(duration * 0.001 * self.samplerate)
-		time = np.arange(sample)
-		frequencies = np.linspace(start_freq, end_freq, sample)
-		modulation = [np.sin(2 * np.pi * f * t / self.samplerate) for (f, t) in zip(np.linspace(start_freq, end_freq, sample), time)] # or log add option
+		time = np.linspace(0, duration * 0.001, num=sample)
+		#frequencies =  np.linspace(start_freq, end_freq / 2, num=sample)
 
+		k = (end_freq - start_freq)/ (duration*0.001)
+		sweep = (start_freq + k/2 * time) * time
+		modulation = np.sin(2* np.pi * sweep)
+
+		# modulation = signal.chirp(t, f0=4000, f1=16000, t1=10, method='linear')
+
+		# modulation = np.sin(2 * np.pi * frequencies * time)
+
+		
 		self.signal = np.array(modulation)
 		self.freq = {'start_freq': start_freq, 'end_freq': end_freq}
 
 
 		# return modulation
 		
-	def amplitude_modulation(self, freq, am_freq, duration=5000):
+	def amplitude_modulation(self, freq, am_freq, duration=500):
 		"""Generate an aplitude-modulated tone at a reference frequency
 
 		Parameters
@@ -140,7 +150,7 @@ class Sound():
 
 		# return modulated_signal
 
-	def freq_noise(self, freq, noise_vol, duration=2500):
+	def freq_noise(self, freq, noise_vol, duration=500):
 		"""Create a pure tone with noise in the background of increasing intensity
 
 		Parameters
@@ -162,7 +172,7 @@ class Sound():
 
 		# return noisy_signal
 
-	def multi_freqs(self, freqs, duration=2500):
+	def multi_freqs(self, freqs, duration=500):
 		""" Generate multiple frequency harmonics
 
 		Parameters

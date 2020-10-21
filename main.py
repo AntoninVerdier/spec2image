@@ -32,7 +32,7 @@ plt.rcParams['figure.figsize'] = [20, 12]
 plt.rcParams['figure.dpi'] 
 
 #Extract data
-sample, samplerate = librosa.load(os.path.join(paths.path2Sample, 'pipeline_test.wav'),
+sample, samplerate = librosa.load(os.path.join(paths.path2Sample, 'modulation_test.wav'),
 								  sr=None, mono=True, offset=0.0, duration=None)
 
 tonotopic_maps = np.load(os.path.join(paths.path2Data, 'INT_Sebmice_alignedtohorizon.npy'))
@@ -62,19 +62,15 @@ if args.rectangle is not None:
 	freqs_bounds = np.linspace(4e3, 32e3, num=args.rectangle + 1)
 	freq_series = [specgram[:, i] for i in range(specgram.shape[1])]
 
+	freq_idx = [np.where((frequencies > freqs_bounds[i]) & (frequencies < f)) for i, f in enumerate(freqs_bounds[1:])]
 
-acti_rect = []
-for freq in freq_series:
-	# !!!!!!!!!!!!!!!!! It needs to be frequencies not amplitudes
-	freq = (freq - np.min(freq)) / (np.max(freq) - np.min(freq))
-	print(freq)
-	acti_rect.append([np.sum(freq[(freq >= freqs_bounds[i-1]) & (freq < f)]) for i, f in enumerate(freqs_bounds[1:])])
-acti_rect = np.array(acti_rect)
-print(acti_rect.shape)
+	acti_rect = []
+	for i, freq in enumerate(freq_series):
+		print(freq.shape)
+		#freq = (freq - np.min(freq)) / (np.max(freq) - np.min(freq))
+		acti_rect.append([np.sum(freq[idx]) for idx in freq_idx])
+	acti_rect = np.array(acti_rect)
 
-plt.close()
-plt.imshow(acti_rect)
-plt.show()
 
 
 # Extract frequencies for a given time
