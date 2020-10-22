@@ -237,7 +237,8 @@ class Sound():
 
 if args.inline:
 	if not os.path.exists(args.path):
-		os.mkdir(args.path)
+		os.makedirs(args.path)
+
 	if args.puretone:
 		pure = Sound()
 		pure.simple_freq(args.puretone, duration=args.duration)
