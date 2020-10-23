@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 
 from scipy import signal
 from skimage.measure import block_reduce
+from sklearn.preprocessing import normalize
 
 import settings as sett
 
@@ -135,7 +136,7 @@ def rectangle_stim(tmap4, tmap32, n_rectangles, width_rect=0.4, squared=False):
 				if score == 4:
 					inside.append([int(idx), int(idy)])
 		rect_stim.append(np.array(inside))
-	
+
 	return rect_stim, weighted_tmap, min_1, min_2
 
 def gaussian_windowing(specgram, frequencies):
@@ -157,4 +158,25 @@ def gaussian_windowing(specgram, frequencies):
 	magnitudes = magnitudes/np.max(magnitudes)
 
 	return magnitudes
+
+def rectangle_windowing(specgram, frequencies, n_rectangle=5):
+
+	# Special cas ewhere tonotopic maps are 4 and 32
+	freqs_bounds = np.linspace(4e3, 32e3, num=n_rectangle + 1)
+	freq_series = [specgram[:, i] for i in range(specgram.shape[1])]
+
+	freq_idx = [np.where((frequencies > freqs_bounds[i]) & (frequencies < f)) for i, f in enumerate(freqs_bounds[1:])]
+
+	acti_rect = []
+	for i, freq in enumerate(freq_series):
+		freq = (freq - np.min(freq)) / (np.max(freq) - np.min(freq))
+		acti_rect.append([np.sum(freq[idx]) for idx in freq_idx])
+	acti_rect = np.array(acti_rect)
+	print(acti_rect)
+	print(np.max(acti_rect))
+
+	acti_rect = (acti_rect - np.min(acti_rect)) / (np.max(acti_rect) - np.min(acti_rect))
+
+	return acti_rect
+
 

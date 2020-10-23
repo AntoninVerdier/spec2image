@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 from scipy.io import wavfile
 from skimage.measure import block_reduce
+import matplotlib.animation as animation
 
 import plot as pl 
 import settings as sett
@@ -32,7 +33,7 @@ plt.rcParams['figure.figsize'] = [20, 12]
 plt.rcParams['figure.dpi'] 
 
 #Extract data
-sample, samplerate = librosa.load(os.path.join(paths.path2Sample, 'modulation_test.wav'),
+sample, samplerate = librosa.load(os.path.join(paths.path2Sample, 'example03.wav'),
 								  sr=None, mono=True, offset=0.0, duration=None)
 
 tonotopic_maps = np.load(os.path.join(paths.path2Data, 'INT_Sebmice_alignedtohorizon.npy'))
@@ -56,20 +57,20 @@ specgram, frequencies, times = proc.spectro(sample, samplerate)
 
 # Compute rectangle stimulation if needed
 if args.rectangle is not None:
-	rect_stim, weighted_tmap, min_4, min_32 = proc.rectangle_stim(tonotopic_maps[0], tonotopic_maps[2], 5)
+	rect_stim, weighted_tmap, min_4, min_32 = proc.rectangle_stim(tonotopic_maps[0], tonotopic_maps[2], args.rectangle)
+	frequencies = np.linspace(4000, 32000, num=801)
+	print(np.min(frequencies), np.max(frequencies), frequencies.shape)
+	magnitudes = proc.rectangle_windowing(specgram, frequencies, n_rectangle=args.rectangle)
 
-	# Special cas ewhere tonotopic maps are 4 and 32
-	freqs_bounds = np.linspace(4e3, 32e3, num=args.rectangle + 1)
-	freq_series = [specgram[:, i] for i in range(specgram.shape[1])]
 
-	freq_idx = [np.where((frequencies > freqs_bounds[i]) & (frequencies < f)) for i, f in enumerate(freqs_bounds[1:])]
-
-	acti_rect = []
-	for i, freq in enumerate(freq_series):
-		print(freq.shape)
-		#freq = (freq - np.min(freq)) / (np.max(freq) - np.min(freq))
-		acti_rect.append([np.sum(freq[idx]) for idx in freq_idx])
-	acti_rect = np.array(acti_rect)
+	all_maps = []
+	for magnitude in magnitudes:
+		buffer_map = np.copy(weighted_tmap)
+		for rect, mag in zip(rect_stim, magnitude):
+			buffer_map[rect[:, 0], rect[:, 1]] = mag
+		all_maps.append(buffer_map)
+	all_maps = np.array(all_maps)
+	all_maps = all_maps[:400]
 
 
 
@@ -78,19 +79,19 @@ if args.rectangle is not None:
 # tonotopic_projections = np.array([tonotopic_maps * mag[:, np.newaxis, np.newaxis] for mag in magnitudes])
 
 # Downscale projection to match implants' characteristics
-
-
+fig = plt.figure()
 plt.scatter(min_4[0], min_4[1], marker='o', c='red')
 plt.scatter(min_32[0], min_32[1], marker='o', c='red')
 plt.plot([min_4[0], min_32[0]], [min_4[1], min_32[1]])
 
-for i, rect in enumerate(rect_stim):
-	weighted_tmap[rect[:, 1], rect[:, 0]] = 0.2 * i
-	plt.imshow(weighted_tmap, cmap='coolwarm')
-plt.title('Stimulation along a tonotopic axis')
-plt.savefig('update.png')
-plt.show() 
+ims = []
+for m in all_maps:
+	im0 = plt.imshow(m, vmin=0, vmax=1)
+	ims.append([im0])
 
+ani = animation.ArtistAnimation(fig, ims, interval=100, blit=False,
+                                repeat_delay=1000)
+ani.save(os.path.join(paths.path2Output, 'animation.mp4'), writer='ffmpeg', fps=30)
 # stimulus = []
 # for i, rect in enumerate(rect_stim):
 # 	buffer_map = np.copy(weighted_tmap) # relpace function copy by zero_like for mask

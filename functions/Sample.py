@@ -7,30 +7,6 @@ from scipy.io import wavfile
 
 from tqdm import tqdm
 
-parser = argparse.ArgumentParser(description='Parameters for computing')
-
-parser.add_argument('--inline', '-i', action='store_true', 
-				    help='for inline generated sounds')
-parser.add_argument('--puretone', '-p', type=int,
-					help='Generate a pure tone frequency, please specify frequency in Hz')
-parser.add_argument('--noise', '-n', type=float, nargs=2,
-					help='Specify frequency (Hz) and noise(btw 0 and 1')
-parser.add_argument('--ampmod', '-am', type=int, nargs=2, 
-					help='Amplitude modulation. Base frequency and modulation frequency in Hz')
-parser.add_argument('--harmonic', '-ha', type=int, nargs='*',
- 					help='Generate harmnics Enter frequencies in Hz')
-parser.add_argument('--freqmod', '-fm', type=int, nargs=2, 
-					help='Ramp frequency generation')
-parser.add_argument('--duration', '-d', type=int, default=500,
-					help='Duration of the stimulus in ms')
-parser.add_argument('--path', '-a', type=str, default='Samples/',
-					help='Path where to save produced stimulus')
-parser.add_argument('--name', '-na', type=str, default=None, 
-					help='Name of the file generated')
-
-args = parser.parse_args()
-
-
 class Sound():
 	""" Class for creating sound paradigm with multiple features
 
@@ -235,32 +211,59 @@ class Sound():
 		else:
 			wavfile.write(os.path.join(path, name + '.wav'), self.samplerate, self.signal)
 
-if args.inline:
-	if not os.path.exists(args.path):
-		os.makedirs(args.path)
+def main():
+	print('inline')
+	parser = argparse.ArgumentParser(description='Parameters for computing')
 
-	if args.puretone:
-		pure = Sound()
-		pure.simple_freq(args.puretone, duration=args.duration)
-		pure.save_wav(path=args.path, name=args.name)
-	
-	elif args.noise:
-		noise = Sound()
-		noise.freq_noise(args.noise[0], args.noise[1], duration=args.duration)
-		noise.save_wav(path=args.path, name=args.name)
+	parser.add_argument('--inline', '-i', action='store_true', 
+					    help='for inline generated sounds')
+	parser.add_argument('--puretone', '-p', type=int,
+						help='Generate a pure tone frequency, please specify frequency in Hz')
+	parser.add_argument('--noise', '-n', type=float, nargs=2,
+						help='Specify frequency (Hz) and noise(btw 0 and 1')
+	parser.add_argument('--ampmod', '-am', type=int, nargs=2, 
+						help='Amplitude modulation. Base frequency and modulation frequency in Hz')
+	parser.add_argument('--harmonic', '-ha', type=int, nargs='*',
+	 					help='Generate harmnics Enter frequencies in Hz')
+	parser.add_argument('--freqmod', '-fm', type=int, nargs=2, 
+						help='Ramp frequency generation')
+	parser.add_argument('--duration', '-d', type=int, default=500,
+						help='Duration of the stimulus in ms')
+	parser.add_argument('--path', '-a', type=str, default='Samples/',
+						help='Path where to save produced stimulus')
+	parser.add_argument('--name', '-na', type=str, default=None, 
+						help='Name of the file generated')
 
-	elif args.ampmod:
-		am = Sound()
-		am.amplitude_modulation(args.ampmod[0], args.ampmod[1], duration=args.duration)
-		am.save_wav(path=args.path, name=args.name)
+	args = parser.parse_args()
 
-	elif args.freqmod:
-		freqmod = Sound()
-		freqmod.freq_modulation(args.freqmod[0], args.freqmod[1], duration=args.duration)
-		freqmod.save_wav(path=args.path, name=args.name)
+	if args.inline:
+		if not os.path.exists(args.path):
+			os.makedirs(args.path)
 
-	elif args.harmonic:
-		harmonic = Sound()
-		harmonic.multi_freqs(args.harmonic, duration=args.duration)
-		harmonic.save_wav(path=args.path, name=args.name)
+		if args.puretone:
+			pure = Sound()
+			pure.simple_freq(args.puretone, duration=args.duration)
+			pure.save_wav(path=args.path, name=args.name)
+		
+		elif args.noise:
+			noise = Sound()
+			noise.freq_noise(args.noise[0], args.noise[1], duration=args.duration)
+			noise.save_wav(path=args.path, name=args.name)
 
+		elif args.ampmod:
+			am = Sound()
+			am.amplitude_modulation(args.ampmod[0], args.ampmod[1], duration=args.duration)
+			am.save_wav(path=args.path, name=args.name)
+
+		elif args.freqmod:
+			freqmod = Sound()
+			freqmod.freq_modulation(args.freqmod[0], args.freqmod[1], duration=args.duration)
+			freqmod.save_wav(path=args.path, name=args.name)
+
+		elif args.harmonic:
+			harmonic = Sound()
+			harmonic.multi_freqs(args.harmonic, duration=args.duration)
+			harmonic.save_wav(path=args.path, name=args.name)
+
+if __name__=="__main__":
+	main()
