@@ -212,7 +212,6 @@ class Sound():
 			wavfile.write(os.path.join(path, name + '.wav'), self.samplerate, self.signal)
 
 def main():
-	print('inline')
 	parser = argparse.ArgumentParser(description='Parameters for computing')
 
 	parser.add_argument('--inline', '-i', action='store_true', 

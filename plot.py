@@ -127,7 +127,7 @@ def rectangle_mp4(min_4, min_32, all_maps):
 	fig = plt.figure()
 	plt.scatter(min_4[1], min_4[0], marker='o', c='red')
 	plt.scatter(min_32[1], min_32[0], marker='o', c='red')
-	plt.plot([min_4[0], min_32[0]], [min_4[1], min_32[1]])
+	plt.plot([min_4[1], min_32[1]], [min_4[0], min_32[0]])
 
 	ims = []
 	for m in all_maps:

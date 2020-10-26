@@ -17,8 +17,27 @@ paths = sett.paths()
 params = sett.parameters()
 args = sett.arguments().args
 
+# Complex sound
+modul = Sound()
+modul.freq_modulation(4000, 16000,duration=500)
+
+am = Sound()
+am.amplitude_modulation(16000, 15, duration=1500)
+
+harm = Sound()
+harm.multi_freqs([5000, 7000, 15000, 30000], duration=1500)
+
+pure = Sound()
+pure.simple_freq(8000, duration=500)
+
+final = modul + am +harm + pure
+final.save_wav(name='final_test', path='../Samples')
+
+
+
+
 #Extract data
-sample, samplerate = librosa.load(os.path.join(paths.path2Sample, 'example03.wav'),
+sample, samplerate = librosa.load(os.path.join(paths.path2Sample, 'final_test.wav'),
 								  sr=None, mono=True, offset=0.0, duration=None)
 
 tonotopic_maps = np.load(os.path.join(paths.path2Data, 'INT_Sebmice_alignedtohorizon.npy'))
@@ -56,10 +75,12 @@ if args.rectangle is not None:
 	
 	if args.plot:
 		pl.rectangle_mp4(min_4, min_32, all_maps)
+	single_map = True
 
 else:
 	magnitudes = proc.gaussian_windowing(specgram, frequencies)
 	all_maps = np.array([tonotopic_maps * mag[:, np.newaxis, np.newaxis] for mag in magnitudes])
+	single_map = False
 
 
-projections = proc.implant_projection(all_maps, single_map=True)
+projections = proc.implant_projection(all_maps, single_map=single_map)

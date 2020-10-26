@@ -59,11 +59,12 @@ def implant_projection(tmaps, single_map=False):
 	# Cut excess borders
 	tmaps = tmaps[:, width_cut:, height_cut:]
 
-	print(tmaps.shape)
-
 	tmap_implant = block_reduce(tmaps, block_size=(1, tmaps.shape[1] // params.size_implant, tmaps.shape[2] // params.size_implant), func=np.mean)
 
 	return tmap_implant
+
+def min_max_norm(arr):
+	return (arr - np.min(arr)) / (np.max(arr) - np.min(arr))
 
 def spectro(sample, samplerate, window_ms=20, overlap=50, plot=False):
 	window_size = int(window_ms * samplerate * 0.001)
@@ -101,6 +102,7 @@ def rectangle_stim(tmap4, tmap32, n_rectangles, width_rect=0.4, squared=False):
 
 
 	weighted_tmap = tmap32 - tmap4
+	weighted_tmap = min_max_norm(weighted_tmap)
 
 	distance_min = math.sqrt((min_1[0] - min_2[0])**2 + (min_1[1] - min_2[1])**2)
 	
@@ -172,7 +174,10 @@ def rectangle_windowing(specgram, frequencies, n_rectangle=5):
 		acti_rect.append([np.sum(freq[idx]) for idx in freq_idx])
 	acti_rect = np.array(acti_rect)
 
-	acti_rect = (acti_rect - np.min(acti_rect)) / (np.max(acti_rect) - np.min(acti_rect))
+	#acti_rect = (acti_rect - np.min(acti_rect)) / (np.max(acti_rect) - np.min(acti_rect))
+
+	for a in acti_rect:
+		print(a)
 
 	return acti_rect
 
