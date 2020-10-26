@@ -123,5 +123,20 @@ def figure_1(projection, tmaps, spectro, sample, samplerate, window_ms, overlap)
 
 	ani.save(os.path.join(paths.path2Output, 'animation.mp4'), 'ffmpeg_file', fps=30)
 
+def rectangle_mp4(min_4, min_32, all_maps): 
+	fig = plt.figure()
+	plt.scatter(min_4[1], min_4[0], marker='o', c='red')
+	plt.scatter(min_32[1], min_32[0], marker='o', c='red')
+	plt.plot([min_4[0], min_32[0]], [min_4[1], min_32[1]])
+
+	ims = []
+	for m in all_maps:
+		im0 = plt.imshow(m, vmin=0, vmax=1)
+		ims.append([im0])
+
+	ani = animation.ArtistAnimation(fig, ims, interval=100, blit=False,
+	                                repeat_delay=1000)
+	ani.save(os.path.join(paths.path2Output, 'animation.mp4'), writer='ffmpeg', fps=30)
+
 
 

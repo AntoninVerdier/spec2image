@@ -50,7 +50,7 @@ def implant_projection(tmaps, single_map=False):
 
 	"""
 	# Average stimulation pattern over frequencies to get weighted map
-	if single_map:
+	if not single_map:
 		tmaps = np.mean(tmaps, axis=1)
 	
 	width_cut = tmaps.shape[1] % params.size_implant
@@ -58,6 +58,8 @@ def implant_projection(tmaps, single_map=False):
 
 	# Cut excess borders
 	tmaps = tmaps[:, width_cut:, height_cut:]
+
+	print(tmaps.shape)
 
 	tmap_implant = block_reduce(tmaps, block_size=(1, tmaps.shape[1] // params.size_implant, tmaps.shape[2] // params.size_implant), func=np.mean)
 
@@ -72,7 +74,7 @@ def spectro(sample, samplerate, window_ms=20, overlap=50, plot=False):
 
 
 	plt.title('Spectrogram of sound sample')
-	#plt.yscale('log')
+	plt.yscale('log')
 	plt.ylim((1, int(samplerate / 2)))
 	plt.xlabel('Time (sec)')
 	plt.ylabel('Frequency (Hz)')
@@ -85,10 +87,7 @@ def spectro(sample, samplerate, window_ms=20, overlap=50, plot=False):
 	return spectrum, frequencies, times
 
 def downscale_tmaps(tmaps, block_size=(4, 4)):
-	tmaps_reduced = []
-	for i, tmap in enumerate(tmaps):
-		tmap_reduced = block_reduce(tmap, block_size=block_size, func=np.mean)
-		tmaps_reduced.append(tmap_reduced)
+	tmaps_reduced = [block_reduce(tmap, block_size=block_size, func=np.mean) for i, tmap in enumerate(tmaps)]
 
 	return np.array(tmaps_reduced)
 
@@ -172,8 +171,6 @@ def rectangle_windowing(specgram, frequencies, n_rectangle=5):
 		freq = (freq - np.min(freq)) / (np.max(freq) - np.min(freq))
 		acti_rect.append([np.sum(freq[idx]) for idx in freq_idx])
 	acti_rect = np.array(acti_rect)
-	print(acti_rect)
-	print(np.max(acti_rect))
 
 	acti_rect = (acti_rect - np.min(acti_rect)) / (np.max(acti_rect) - np.min(acti_rect))
 
