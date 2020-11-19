@@ -4,8 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt 
 
 from scipy.io import wavfile
-
-from tqdm import tqdm
+from sklearn.preprocessing import normalize
 
 class Sound():
 	""" Class for creating sound paradigm with multiple features
@@ -175,7 +174,7 @@ class Sound():
 		# return noisy_signal
 
 	def multi_freqs(self, freqs, duration=500):
-		""" Generate multiple frequency harmonics
+		""" Generate multiple frequencies sounds
 
 		Parameters
 		----------
@@ -186,12 +185,36 @@ class Sound():
 		"""
 		sample = int(duration * 0.001 * self.samplerate)
 		time = np.arange(sample)
-		harmonics = np.sum(np.array([[np.sin(2 * np.pi * freq * t / self.samplerate) for t in time] for freq in freqs]), axis=0)
+		all_freqs = np.sum(np.array([[np.sin(2 * np.pi * freq * t / self.samplerate) for t in time] for freq in freqs]), axis=0)
+		all_freqs = np.squeeze(normalize(all_freqs[np.newaxis, :], norm='max'))
 
-		self.signal = np.array(harmonics)
+		self.signal = all_freqs
 		self.freq = {'freq{}'.format(i): f for i, f in enumerate(freqs)}
 
-		# return harmonics
+		# return all_freqs
+
+	def harmonics(self, base_freq, patterns, duration=500):
+		""" Generate patterns of harmonics
+
+		Parameters
+		----------
+		base_freq : int
+			Fundamental frequency
+		patterns : list
+			List of integers of relative amplitude of each harmonic. Begins at the first harmonic
+		duration : int
+		"""
+		sample = int(duration * 0.001 * self.samplerate)
+		time = np.arange(sample)
+		patterns = [1] + patterns
+		all_freqs = np.sum(np.array([[a * np.sin(2 * np.pi * base_freq * (i + 1) * t / self.samplerate) for t in time] for i, a in enumerate(patterns)]), axis=0)
+		all_freqs = np.squeeze(normalize(all_freqs[np.newaxis, :], norm='max'))
+		print(all_freqs.shape)
+		
+		self.signal = all_freqs
+		self.freq = {'freq{}'.format(i): base_freq * (i+2) for i, a in enumerate(patterns)}
+		self.freq['freq'] = base_freq
+
 
 	def save_wav(self, path=None, name=None):
 		""" Save the signal as a .wav file
@@ -266,3 +289,9 @@ def main():
 
 if __name__=="__main__":
 	main()
+
+
+""" Note to self
+Maybe good to add a spectro plotting and save fig function to assess the integrity of the soudn generated
+Need to normalize all the volume !!!!!
+"""
