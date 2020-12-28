@@ -79,7 +79,7 @@ class Sound():
 
 		# return self.signal
 
-	def simple_freq(self, frequency, duration=500):
+	def simple_freq(self, frequency, duration=500, phase=0):
 		"""Generate a pure tone signal for a given duration
 
 		Parameters
