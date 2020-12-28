@@ -1,8 +1,6 @@
 import os
 from functions.Sample import Sound
 
-
-
 # Generation of all wavfiles of interest
 if not os.path.exists('Samples/'):
 	os.makedirs('Samples/')
@@ -34,13 +32,17 @@ AM2 = Sound()
 AM2.amplitude_modulation(16000, 100, duration=750)
 AM2.save_wav(name='AM_100_16k', path='Samples/am/')
 
-# create harmonics
+# create multi-frequencies sound
 harm = Sound()
 harm.multi_freqs([8000, 16000, 20000], duration=750)
-harm.save_wav(name='Harmonics_8_16_20k', path='Samples/harmonics/')
+harm.save_wav(name='Harmonics_8_16_20k', path='Samples/multif/')
 
 # create frequency modulated tone
 mod = Sound()
 mod.freq_modulation(12000, 20000, duration=750)
 mod.save_wav(name='Modul_12_20k', path='Samples/freq_mod/')
 
+#Create harmonics
+harmonics = Sound()
+harmonics.harmonics(500, [0, 0, 1, 1, 0, 0], duration=2000)
+harmonics.save_wav(name='Harmonics_500_001100', path='Samples/harmonics/')
