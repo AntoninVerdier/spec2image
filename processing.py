@@ -1,8 +1,8 @@
-import os 
+import os
 import math
 import scipy
-import numpy as np 
-import matplotlib.pyplot as plt 
+import numpy as np
+import matplotlib.pyplot as plt
 
 from scipy import signal
 from skimage.measure import block_reduce
@@ -52,7 +52,7 @@ def implant_projection(tmaps, single_map=False):
 	# Average stimulation pattern over frequencies to get weighted map
 	if not single_map:
 		tmaps = np.mean(tmaps, axis=1)
-	
+
 	width_cut = tmaps.shape[1] % params.size_implant
 	height_cut = tmaps.shape[2] % params.size_implant
 
@@ -64,13 +64,50 @@ def implant_projection(tmaps, single_map=False):
 	return tmap_implant
 
 def min_max_norm(arr):
+	""" Normalize an array according to the max and min values and project it to 0-1 interval
+
+	Parameters
+	----------
+	arr : array
+		Array to be downscaled
+
+	Return
+	------
+	array
+		Array normalized
+
+	"""
 	return (arr - np.min(arr)) / (np.max(arr) - np.min(arr))
 
 def spectro(sample, samplerate, window_ms=20, overlap=50, plot=False):
+	""" Compute the spectrogram of a 1-D array
+
+	Parameters
+	----------
+	sample : array
+		1-D array containing amplitude for each timepoints
+	samplerate : int
+		Sampling rate of the sample in Hz
+	windows_ms : int, optional
+		Size of the traveling windows used for computing the fft in ms
+	overlap : int, optional
+		Percentage of overlapping between two adjacent windows for computing
+	plot : bool, optional
+		Flag used for debugging
+
+	Returns
+	-------
+	array
+		2D array of intensities of each frequency for each timepoint
+	array
+		Frequency labels
+	array
+		Time labels
+"""
 	window_size = int(window_ms * samplerate * 0.001)
 	overlap_size = overlap * 0.01 * window_size
 
-	spectrum, frequencies, times, im = plt.specgram(sample, Fs=samplerate, 
+	spectrum, frequencies, times, im = plt.specgram(sample, Fs=samplerate,
 													NFFT=window_size, noverlap=overlap_size)
 
 
@@ -105,7 +142,7 @@ def rectangle_stim(tmap4, tmap32, n_rectangles, width_rect=0.4, squared=False):
 	weighted_tmap = min_max_norm(weighted_tmap)
 
 	distance_min = math.sqrt((min_1[0] - min_2[0])**2 + (min_1[1] - min_2[1])**2)
-	
+
 	vector = np.array([min_2[0] - min_1[0], min_2[1] - min_1[1]])
 	v_alpha = vector * 1 / n_rectangles
 	v_theta = np.array([vector[1], - vector[0]]) * width_rect
@@ -119,7 +156,7 @@ def rectangle_stim(tmap4, tmap32, n_rectangles, width_rect=0.4, squared=False):
 						 [origin[0] + v_theta[0] + v_alpha[0], origin[1] + v_theta[1] + v_alpha[1]],
 						 [origin[0] + v_theta[0], origin[1] + v_theta[1]]])
 
-		
+
 		idx_x = np.arange(int(np.min(rect[:, 0])), int(np.max(rect[:, 0])))
 		idx_y = np.arange(int(np.min(rect[:, 1])), int(np.max(rect[:, 1])))
 
@@ -147,7 +184,7 @@ def gaussian_windowing(specgram, frequencies):
 	gaussian_windows = [signal.gaussian(math.log(f/1000, 2)*1000, math.log(f/1000, 2)*150) for f in params.freqs]
 
 	# Get indices of frequencies of interest
-	freq_idxs = [np.where(np.logical_and(frequencies >= params.freqs[i]-len(win)/2, frequencies < params.freqs[i]+len(win)/2)) 
+	freq_idxs = [np.where(np.logical_and(frequencies >= params.freqs[i]-len(win)/2, frequencies < params.freqs[i]+len(win)/2))
 						for i, win in enumerate(gaussian_windows)]
 	win_idxs = [np.array(frequencies[idx] - np.min(frequencies[idx])).astype(int) for idx in freq_idxs]
 
