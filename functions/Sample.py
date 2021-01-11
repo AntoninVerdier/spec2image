@@ -65,6 +65,26 @@ class Sound():
 
 		return newSound
 
+	def __mul__(self, other):
+		""" Define how to combine two sounds
+		"""
+		assert self.samplerate == other.samplerate, 'Signales must have the same samplerate'
+		assert (self.signal is not None) & (other.signal is not None), 'Signals must be defined'
+
+		newSound = Sound(samplerate=self.samplerate)
+		
+		if len(self.signal) >= len(other.signal):
+			self.signal = self.signal[:len(other.signal)]
+		else:
+			other.signal = other.signal[:len(self.signal)]
+		print(other.signal)
+		print(self.signal)
+		
+		newSound.signal = (self.signal + other.signal) /2
+
+		return newSound
+
+
 	def delay(self, duration):
 		""" Generate a silence for a given duration
 
@@ -78,7 +98,7 @@ class Sound():
 
 		# return self.signal
 
-	def simple_freq(self, frequency, duration=500):
+	def simple_freq(self, frequency, amplitude=1,  duration=500):
 		"""Generate a pure tone signal for a given duration
 
 		Parameters
@@ -90,7 +110,7 @@ class Sound():
 		"""
 		sample = int(duration * 0.001 * self.samplerate)
 		time = np.arange(sample)
-		pure_tone = np.sin(2 * np.pi * frequency * time / self.samplerate)
+		pure_tone = amplitude * np.sin(2 * np.pi * frequency * time / self.samplerate)
 
 		self.signal = np.array(pure_tone)
 		self.freq = {'simple' : frequency}
@@ -292,6 +312,6 @@ if __name__=="__main__":
 
 
 """ Note to self
-Maybe good to add a spectro plotting and save fig function to assess the integrity of the soudn generated
+Maybe good to add a spectro plotting and save fig function to assess the integrity of the sound generated
 Need to normalize all the volume !!!!!
 """
