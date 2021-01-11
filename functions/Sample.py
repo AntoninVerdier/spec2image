@@ -1,7 +1,7 @@
 import os
 import argparse
 import numpy as np
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
 
 from scipy.io import wavfile
 from sklearn.preprocessing import normalize
@@ -9,14 +9,14 @@ from sklearn.preprocessing import normalize
 class Sound():
 	""" Class for creating sound paradigm with multiple features
 
-	Attributes 
+	Attributes
 	----------
 	name : str
 		Sample's name. Will be used for saving
 	signal : array
 		Sound signal
-	freq : dict 
-		Dictionnary containing frequencies information for quick access. Not yet supported with __add__ method. 
+	freq : dict
+		Dictionnary containing frequencies information for quick access. Not yet supported with __add__ method.
 	samplerate : int
 		Number of samples needed in the isgnal per unit of time
 
@@ -27,7 +27,7 @@ class Sound():
 	__add__(self, other)
 		Allow user to add two Sound's signals to create a more complex Sound object
 
-	Methods 
+	Methods
 	-------
 	delay(self, duration)
 		Generate a silence for a given duration
@@ -58,7 +58,7 @@ class Sound():
 		"""Define how to assemble generated sounds
 		"""
 		assert self.samplerate == other.samplerate, 'Signals must have the same samplerate'
-		assert (self.signal is not None) & (other.signal is not None), 'Signals must be defined' 
+		assert (self.signal is not None) & (other.signal is not None), 'Signals must be defined'
 
 		newSound = Sound(samplerate=self.samplerate)
 		newSound.signal = np.concatenate((self.signal, other.signal))
@@ -99,6 +99,7 @@ class Sound():
 		# return self.signal
 
 	def simple_freq(self, frequency, amplitude=1,  duration=500):
+
 		"""Generate a pure tone signal for a given duration
 
 		Parameters
@@ -125,7 +126,7 @@ class Sound():
 		start_freq
 			Starting frequency of the signal
 		end_freq
-			Ending frequency of the signal 
+			Ending frequency of the signal
 		duration : int, optional
 			Duration of the sound sample in ms
 
@@ -142,13 +143,13 @@ class Sound():
 
 		# modulation = np.sin(2 * np.pi * frequencies * time)
 
-		
+
 		self.signal = np.array(modulation)
 		self.freq = {'start_freq': start_freq, 'end_freq': end_freq}
 
 
 		# return modulation
-		
+
 	def amplitude_modulation(self, freq, am_freq, duration=500):
 		"""Generate an aplitude-modulated tone at a reference frequency
 
@@ -165,7 +166,7 @@ class Sound():
 		time = np.arange(sample)
 		amplitude = np.sin(2 * np.pi * am_freq * time / self.samplerate)
 		modulated_signal = [A * np.sin(2* np.pi * freq * t / self.samplerate) for A, t in zip(amplitude, time)]
-		
+
 		self.signal = np.array(modulated_signal)
 		self.freq = {'freq': freq, 'am_freq': am_freq}
 
@@ -230,16 +231,16 @@ class Sound():
 		all_freqs = np.sum(np.array([[a * np.sin(2 * np.pi * base_freq * (i + 1) * t / self.samplerate) for t in time] for i, a in enumerate(patterns)]), axis=0)
 		all_freqs = np.squeeze(normalize(all_freqs[np.newaxis, :], norm='max'))
 		print(all_freqs.shape)
-		
+
 		self.signal = all_freqs
 		self.freq = {'freq{}'.format(i): base_freq * (i+2) for i, a in enumerate(patterns)}
 		self.freq['freq'] = base_freq
 
 
-	def save_wav(self, path=None, name=None):
+	def save_wav(self, path=None, name=None, bit16=True):
 		""" Save the signal as a .wav file
 
-		Parameters 
+		Parameters
 		----------
 		name : str, optional
 			Name fo the file to save
@@ -249,6 +250,9 @@ class Sound():
 		if name is None:
 			name = self.name
 
+		if bit16:
+			self.signal = np.array(self.signal*32767).astype(np.int16)
+
 		if path is None:
 			wavfile.write(os.path.join('../Samples/{}.wav'.format(name)), self.samplerate, self.signal)
 		else:
@@ -257,23 +261,23 @@ class Sound():
 def main():
 	parser = argparse.ArgumentParser(description='Parameters for computing')
 
-	parser.add_argument('--inline', '-i', action='store_true', 
+	parser.add_argument('--inline', '-i', action='store_true',
 					    help='for inline generated sounds')
 	parser.add_argument('--puretone', '-p', type=int,
 						help='Generate a pure tone frequency, please specify frequency in Hz')
 	parser.add_argument('--noise', '-n', type=float, nargs=2,
 						help='Specify frequency (Hz) and noise(btw 0 and 1')
-	parser.add_argument('--ampmod', '-am', type=int, nargs=2, 
+	parser.add_argument('--ampmod', '-am', type=int, nargs=2,
 						help='Amplitude modulation. Base frequency and modulation frequency in Hz')
 	parser.add_argument('--harmonic', '-ha', type=int, nargs='*',
 	 					help='Generate harmnics Enter frequencies in Hz')
-	parser.add_argument('--freqmod', '-fm', type=int, nargs=2, 
+	parser.add_argument('--freqmod', '-fm', type=int, nargs=2,
 						help='Ramp frequency generation')
 	parser.add_argument('--duration', '-d', type=int, default=500,
 						help='Duration of the stimulus in ms')
 	parser.add_argument('--path', '-a', type=str, default='Samples/',
 						help='Path where to save produced stimulus')
-	parser.add_argument('--name', '-na', type=str, default=None, 
+	parser.add_argument('--name', '-na', type=str, default=None,
 						help='Name of the file generated')
 
 	args = parser.parse_args()
@@ -286,7 +290,7 @@ def main():
 			pure = Sound()
 			pure.simple_freq(args.puretone, duration=args.duration)
 			pure.save_wav(path=args.path, name=args.name)
-		
+
 		elif args.noise:
 			noise = Sound()
 			noise.freq_noise(args.noise[0], args.noise[1], duration=args.duration)

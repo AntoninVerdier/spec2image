@@ -5,6 +5,9 @@ from functions.Sample import Sound
 if not os.path.exists('Samples/'):
 	os.makedirs('Samples/')
 
+# Psychometrics task 
+
+
 # Create pure frequency tone
 pure = Sound()
 pure.simple_freq(8000, duration=750)
