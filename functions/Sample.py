@@ -45,7 +45,7 @@ class Sound():
 		Save the signal as a .wav file
 
 	"""
-	def __init__(self, samplerate=80000):
+	def __init__(self, samplerate=192000):
 
 		""" Constructor at initialization
 		"""
