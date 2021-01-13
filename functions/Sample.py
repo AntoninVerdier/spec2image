@@ -45,7 +45,7 @@ class Sound():
 		Save the signal as a .wav file
 
 	"""
-	def __init__(self, samplerate=192000):
+	def __init__(self, samplerate=192000, amplitude=70):
 
 		""" Constructor at initialization
 		"""
@@ -53,6 +53,11 @@ class Sound():
 		self.signal = None
 		self.freq = None
 		self.samplerate = samplerate
+
+		#Elphy setup amplitude
+		dBref = 100 + np.log10(math.sqrt(2))*20
+		A=10**((amplitude-dBref)/20)
+		self.amplitude = A
 
 	def __add__(self, other):
 		"""Define how to assemble generated sounds
@@ -72,14 +77,14 @@ class Sound():
 		assert (self.signal is not None) & (other.signal is not None), 'Signals must be defined'
 
 		newSound = Sound(samplerate=self.samplerate)
-		
+
 		if len(self.signal) >= len(other.signal):
 			self.signal = self.signal[:len(other.signal)]
 		else:
 			other.signal = other.signal[:len(self.signal)]
 		print(other.signal)
 		print(self.signal)
-		
+
 		newSound.signal = (self.signal + other.signal) /2
 
 		return newSound
