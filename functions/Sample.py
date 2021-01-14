@@ -104,7 +104,7 @@ class Sound():
 
 		# return self.signal
 
-	def simple_freq(self, frequency, amplitude=1,  duration=500):
+	def simple_freq(self, frequency,  duration=500):
 
 		"""Generate a pure tone signal for a given duration
 
@@ -117,7 +117,7 @@ class Sound():
 		"""
 		sample = int(duration * 0.001 * self.samplerate)
 		time = np.arange(sample)
-		pure_tone = amplitude * np.sin(2 * np.pi * frequency * time / self.samplerate)
+		pure_tone = self.amplitude * np.sin(2 * np.pi * frequency * time / self.samplerate)
 
 		self.signal = np.array(pure_tone)
 		self.freq = {'simple' : frequency}
