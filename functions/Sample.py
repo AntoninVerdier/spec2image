@@ -170,7 +170,7 @@ class Sound():
 		"""
 		sample = int(duration * 0.001 * self.samplerate)
 		time = np.arange(sample)
-		amplitude = np.sin(2 * np.pi * am_freq * time / self.samplerate)
+		amplitude = self.amplitude * np.sin(2 * np.pi * am_freq * time / self.samplerate)
 		modulated_signal = [A * np.sin(2* np.pi * freq * t / self.samplerate) for A, t in zip(amplitude, time)]
 
 		self.signal = np.array(modulated_signal)
