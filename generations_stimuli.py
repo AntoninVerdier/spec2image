@@ -8,9 +8,9 @@ if not os.path.exists('Samples/'):
 	os.makedirs('Samples/')
 
 # Psychometrics task, Frequency discrimination
-freqs = np.array(np.geomspace(20, 200, 16), dtype=np.int32)
+ams = np.array(np.geomspace(20, 200, 16), dtype=np.int32)
 
-for f in freqs:
+for a in ams:
 	pure = Sound(samplerate=192000, amplitude=70)
-	pure.amplitude_modulation(10000, f, duration=500)
+	pure.amplitude_modulation(10e3, a, duration=500)
 	pure.save_wav(name='PT_{}Hz_{}ms_{}dB'.format(f, 500, 70), path='../Samples/Samples_AM_20_200_New/')
