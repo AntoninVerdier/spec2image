@@ -156,7 +156,7 @@ class Sound():
 
 		# return modulation
 
-	def amplitude_modulation(self, freq, am_freq, duration=500):
+	def amplitude_modulation(self, freq, am_freq, duration=500, ramp=0.01):
 		"""Generate an aplitude-modulated tone at a reference frequency
 
 		Parameters
@@ -170,9 +170,14 @@ class Sound():
 		"""
 		sample = int(duration * 0.001 * self.samplerate)
 		time = np.arange(sample)
-		print(am_freq)
-		amplitude = 0.5 * (1 + np.sin(2 * np.pi * am_freq * time / self.samplerate))
-		print(np.min(amplitude), np.max(amplitude))
+		amplitude = 0.5 * (1 - np.cos(2 * np.pi * am_freq * time / self.samplerate))
+
+		if ramp:
+			ramp_len = int(self.samplerate * ramp)
+			ramp_sample = np.linspace(0, 1, ramp_len)
+			amplitude[:ramp_len] = amplitude[:ramp_len] * ramp_sample
+			amplitude[-ramp_len:] = amplitude[-ramp_len:] * list(reversed(ramp_sample))
+
 		modulated_signal = [A * self.amplitude * np.sin(2* np.pi * freq * t / self.samplerate) for A, t in zip(amplitude, time)]
 
 		self.signal = np.array(modulated_signal)
