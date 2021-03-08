@@ -104,7 +104,7 @@ class Sound():
 
 		# return self.signal
 
-	def simple_freq(self, frequency,  duration=500):
+	def pure_tone(self, frequency,  duration=500):
 
 		"""Generate a pure tone signal for a given duration
 
@@ -121,8 +121,6 @@ class Sound():
 
 		self.signal = np.array(pure_tone)
 		self.freq = {'simple' : frequency}
-
-		# return pure_tone
 
 	def freq_modulation(self, start_freq, end_freq, duration=500):
 		"""Generate a signal of increase or decreasing frequencies
@@ -183,8 +181,6 @@ class Sound():
 		self.signal = np.array(modulated_signal)
 		self.freq = {'freq': freq, 'am_freq': am_freq}
 
-		# return modulated_signal
-
 	def freq_noise(self, freq, noise_vol, duration=500):
 		"""Create a pure tone with noise in the background of increasing intensity
 
@@ -225,8 +221,6 @@ class Sound():
 		self.signal = all_freqs
 		self.freq = {'freq{}'.format(i): f for i, f in enumerate(freqs)}
 
-		# return all_freqs
-
 	def harmonics(self, base_freq, patterns, duration=500):
 		""" Generate patterns of harmonics
 
@@ -248,7 +242,6 @@ class Sound():
 		self.signal = all_freqs
 		self.freq = {'freq{}'.format(i): base_freq * (i+2) for i, a in enumerate(patterns)}
 		self.freq['freq'] = base_freq
-
 
 	def save_wav(self, path=None, name=None, bit16=True):
 		""" Save the signal as a .wav file
