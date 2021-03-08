@@ -17,25 +17,6 @@ paths = sett.paths()
 params = sett.parameters()
 args = sett.arguments().args
 
-# Complex sound
-modul = Sound()
-modul.freq_modulation(4000, 16000,duration=500)
-
-am = Sound()
-am.amplitude_modulation(16000, 15, duration=1500)
-
-harm = Sound()
-harm.multi_freqs([5000, 7000, 15000, 30000], duration=1500)
-
-pure = Sound()
-pure.simple_freq(8000, duration=500)
-
-final = modul + am +harm + pure
-final.save_wav(name='final_test', path='../Samples')
-
-
-
-
 #Extract data
 sample, samplerate = librosa.load(os.path.join(paths.path2Sample, 'final_test.wav'),
 								  sr=None, mono=True, offset=0.0, duration=None)
