@@ -56,7 +56,9 @@ class Sound():
 		self.samplerate = samplerate
 
 		#Elphy setup amplitude
-		dBref = 100 + np.log10(math.sqrt(2))*20
+		dBref = 100
+		# Etienne's suggestion = 100 - np.log10(math.sqrt(2))*20
+
 		A=10**((amplitude-dBref)/20)
 		self.amplitude = A
 
@@ -83,10 +85,8 @@ class Sound():
 			self.signal = self.signal[:len(other.signal)]
 		else:
 			other.signal = other.signal[:len(self.signal)]
-		print(other.signal)
-		print(self.signal)
 
-		newSound.signal = (self.signal + other.signal) /2
+		newSound.signal = self.signal + other.signal
 
 		return newSound
 
@@ -104,6 +104,17 @@ class Sound():
 
 		# return self.signal
 
+	def noise(self, duration):
+		""" generate a white noise for a given duration
+
+		Parameters
+		----------
+		duration : int
+			Duration of the noise in ms
+		"""
+		sample = int(duration * 0.001 * self.samplerate)
+		self.signal = self.amplitude * np.random.normal(0, 1, size=sample)
+	
 	def pure_tone(self, frequency,  duration=500):
 
 		"""Generate a pure tone signal for a given duration
@@ -141,7 +152,7 @@ class Sound():
 
 		k = (end_freq - start_freq)/ (duration*0.001)
 		sweep = (start_freq + k/2 * time) * time
-		modulation = np.sin(2* np.pi * sweep)
+		modulation = self.amplitude * np.sin(2* np.pi * sweep)
 
 		# modulation = signal.chirp(t, f0=4000, f1=16000, t1=10, method='linear')
 
