@@ -114,7 +114,7 @@ class Sound():
 		"""
 		sample = int(duration * 0.001 * self.samplerate)
 		self.signal = self.amplitude * np.random.normal(0, 1, size=sample)
-	
+
 	def pure_tone(self, frequency,  duration=500):
 
 		"""Generate a pure tone signal for a given duration
@@ -253,6 +253,37 @@ class Sound():
 		self.signal = all_freqs
 		self.freq = {'freq{}'.format(i): base_freq * (i+2) for i, a in enumerate(patterns)}
 		self.freq['freq'] = base_freq
+
+	def steps(self, start_freq, end_freq, nstep, spacing='Log', duration=500):
+
+		sample = int(duration * 0.001 * self.samplerate)
+		time = np.arange(sample)
+
+		#times = [0]
+		times = [duration//nstep for i in range(nstep)][:-1]
+		#times[-1] += duration%nstep
+
+		times = np.cumsum(times) * 0.001 * self.samplerate
+		times = [int(t) for t in times]
+
+		step_times = np.split(time, times)
+
+		if spacing == 'Log':
+			freq_steps = np.geomspace(start_freq, end_freq, nstep)
+
+		if spacing == 'Linear':
+			freq_steps = np.linspace(start_freq, end_freq, nstep)
+
+		tone = self.amplitude * np.sin(2 * np.pi * freq_steps[0] * step_times[0] / self.samplerate)
+
+		for i, freq in enumerate(freq_steps[1:]):
+			current_tone = self.amplitude * np.sin(2 * np.pi * freq * step_times[i+1] / self.samplerate)
+			tone = np.concatenate((tone, current_tone))
+
+		print(tone)
+		self.signal = tone
+		self.freq = {'start_freq': start_freq, 'end_freq': end_freq}
+
 
 	def save_wav(self, path=None, name=None, bit16=True):
 		""" Save the signal as a .wav file

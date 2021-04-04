@@ -1,8 +1,8 @@
 
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import tensorflow as tf
-physical_devices = tf.config.list_physical_devices('GPU') 
+physical_devices = tf.config.list_physical_devices('GPU')
 tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
 import keras
@@ -31,11 +31,13 @@ X_test = X_test.reshape(-1, int(samplerate*0.04), 1)
 
 # This is our input image
 model = Sequential()
-model.add(Conv1D(, activation='relu', input_shape=(X_train.shape[1:])))
+model.add(LSTM(512, activation='relu', input_shape=(X_train.shape[1:])))
 model.add(RepeatVector(X_train.shape[1]))
 model.add(LSTM(512, activation='relu', return_sequences=True))
 model.add(TimeDistributed(Dense(1)))
 model.compile(optimizer='adam', loss='mse')
+model.summary()
+keras.utils.plot_model(model, show_shapes=True, to_file='lstm_autoencoder.png')
 
 model.fit(X_train, X_train,
                 epochs=10,
