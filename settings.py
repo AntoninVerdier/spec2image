@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 class paths():
 	def __init__(self):
 		self.path2Data = '../Data/'
-		self.path2Sample = '../Samples/'
+		self.path2Sample = 'Samples/'
 		self.path2Output = '../Output/'
 
 class parameters():

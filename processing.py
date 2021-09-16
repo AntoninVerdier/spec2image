@@ -79,7 +79,7 @@ def min_max_norm(arr):
 	"""
 	return (arr - np.min(arr)) / (np.max(arr) - np.min(arr))
 
-def spectro(sample, samplerate, window_ms=20, overlap=50, plot=False):
+def spectro(sample, samplerate, window_ms=1, overlap=0, plot=False):
 	""" Compute the spectrogram of a 1-D array
 
 	Parameters
