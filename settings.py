@@ -14,7 +14,7 @@ class paths():
 
 class parameters():
 	def __init__(self):
-		self.size_implant = 40
+		self.size_implant = 80
 		self.freq_resolution = 4
 		self.freqs = [4e3, 16e3, 32e3]
 

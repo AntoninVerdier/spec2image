@@ -79,7 +79,7 @@ def min_max_norm(arr):
 	"""
 	return (arr - np.min(arr)) / (np.max(arr) - np.min(arr))
 
-def spectro(sample, samplerate, window_ms=1, overlap=0, plot=False):
+def spectro(sample, samplerate, window_ms=1, overlap=50, plot=False):
 	""" Compute the spectrogram of a 1-D array
 
 	Parameters
@@ -178,22 +178,61 @@ def rectangle_stim(tmap4, tmap32, n_rectangles, width_rect=0.4, squared=False):
 	return rect_stim, weighted_tmap, min_1, min_2
 
 def gaussian_windowing(specgram, frequencies):
+	# is the specgram normalized ? Think yes
+	# freq series is all the frequencies for each time point in the spectrogram
 	freq_series = [specgram[:, i] for i in range(specgram.shape[1])]
 
 	# Define windows for gaussian windowing
 	gaussian_windows = [signal.gaussian(math.log(f/1000, 2)*1000, math.log(f/1000, 2)*150) for f in params.freqs]
 
+	for g in gaussian_windows:
+		print(np.max(g), np.min(g))
+
+
 	# Get indices of frequencies of interest
 	freq_idxs = [np.where(np.logical_and(frequencies >= params.freqs[i]-len(win)/2, frequencies < params.freqs[i]+len(win)/2))
 						for i, win in enumerate(gaussian_windows)]
+
 	win_idxs = [np.array(frequencies[idx] - np.min(frequencies[idx])).astype(int) for idx in freq_idxs]
 
+	print(win_idxs)
+
 	magnitudes = []
+	# Multiply freq series by gaussian window or 0 ?? 
 	for i, freq in enumerate(freq_series):
 		magnitudes.append([np.sum(freq[freq_idxs[i]] * win[win_idxs[i]]) for i, win in enumerate(gaussian_windows)])
 
 	magnitudes = np.array(magnitudes)
+	print(magnitudes.shape)
 	magnitudes = magnitudes/np.max(magnitudes)
+	print(magnitudes.shape)
+
+	return magnitudes
+
+def gaussian_windowing_updated(specgram, frequencies):
+	# is the specgram normalized ? Think yes
+	# freq series is all the frequencies for each time point in the spectrogram
+	
+	# Define windows for gaussian windowing
+	gaussian_windows = [signal.gaussian(math.log(f/1000, 2)*1000, math.log(f/1000, 2)*150) for f in params.freqs]
+	gaussian_windows = [np.pad(g, (0, 97000-len(g))) for g in gaussian_windows]
+	#gaussian_windows = [np.histogram(g, bins=specgram.shape[0], density=True)[1] for g in gaussian_windows]
+	gaussian_windows = [np.mean(g.reshape(-1, 1000), axis=1) for g in gaussian_windows]
+	
+	# Multiply freq series by gaussian window or 0 ?? 
+	freq_series = [specgram[:, i] for i in range(specgram.shape[1])]
+
+	magnitudes = []
+	for i, freq in enumerate(freq_series):
+		magnitudes.append([np.sum(freq * g) for g in gaussian_windows]) # Maybe all gaussian need to have the same area under the curve
+		plt.plot(freq)
+		plt.show()
+
+	magnitudes = np.array(magnitudes)
+	magnitudes = magnitudes/np.max(magnitudes)
+	print(magnitudes.shape)
+	plt.imshow(magnitudes)
+	plt.show()
 
 	return magnitudes
 

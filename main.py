@@ -19,16 +19,16 @@ params = sett.parameters()
 args = sett.arguments().args
 
 for file in os.listdir(paths.path2Sample):
-
+	print(file)
 	#Extract data
-	sample, samplerate = librosa.load(os.path.join(paths.path2Sample, 'PT_20Hz_500ms_70dB.wav'),
+	sample, samplerate = librosa.load(os.path.join(paths.path2Sample, 'PT_7300Hz_500ms_70dB.wav'),
 									  sr=None, mono=True, offset=0.0, duration=None)
-	print(samplerate)
 
 	tonotopic_maps = np.load(os.path.join(paths.path2Data, 'INT_Sebmice_alignedtohorizon.npy'))
 	tonotopic_maps = proc.downscale_tmaps(tonotopic_maps, block_size=(4, 4))
 
 	# Remove weighted map at the end and white noise at the beginning
+
 	tonotopic_maps = tonotopic_maps[1:-1, :, :]
 
 	# Normalization of tonotopic maps and inversion (bright spots should be of interest)
@@ -40,7 +40,7 @@ for file in os.listdir(paths.path2Sample):
 		sample = np.transpose(sample[:-len(sample)/2, 0])
 
 	# Compute spectrogram
-	specgram, frequencies, times = proc.spectro(sample, samplerate)
+	specgram, frequencies, times = proc.spectro(sample, samplerate, plot=True)
 
 	# Compute rectangle stimulation if needed
 	if args.rectangle is not None:
@@ -63,7 +63,7 @@ for file in os.listdir(paths.path2Sample):
 		single_map = True
 
 	else:
-		magnitudes = proc.gaussian_windowing(specgram, frequencies)
+		magnitudes = proc.gaussian_windowing_updated(specgram, frequencies)
 		all_maps = np.array([tonotopic_maps * mag[:, np.newaxis, np.newaxis] for mag in magnitudes])
 		single_map = False
 
@@ -116,4 +116,7 @@ for file in os.listdir(paths.path2Sample):
 
 	    plt.show()
 
-	#cube_show_slider(np.swapaxes(projections[1:,:,:], 0, 2))
+	cube_show_slider(np.swapaxes(projections[1:,:,:], 0, 2))
+
+# Do a different processinf for AM sound
+# Revoir le gaussian windowing qui est chelou. Fréquence pas stable. 
