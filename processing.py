@@ -33,7 +33,7 @@ def fast_fourier(sample, samplerate):
 
 	return fft
 
-def implant_projection(tmaps, single_map=False):
+def implant_projection(tmaps, single_map=False, normalize=True):
 	""" Downscale the final cortical stimulation to match capacitty of the implant
 
 	Parameters
@@ -61,6 +61,8 @@ def implant_projection(tmaps, single_map=False):
 
 	tmap_implant = block_reduce(tmaps, block_size=(1, tmaps.shape[1] // params.size_implant, tmaps.shape[2] // params.size_implant), func=np.mean)
 
+	tmap_implant = (tmap_implant - np.min(tmap_implant))/np.max(tmap_implant)
+
 	return tmap_implant
 
 def min_max_norm(arr):
@@ -79,7 +81,7 @@ def min_max_norm(arr):
 	"""
 	return (arr - np.min(arr)) / (np.max(arr) - np.min(arr))
 
-def spectro(sample, samplerate, window_ms=1, overlap=50, plot=False):
+def spectro(sample, samplerate, window_ms=5, overlap=50, plot=False):
 	""" Compute the spectrogram of a 1-D array
 
 	Parameters
@@ -185,54 +187,63 @@ def gaussian_windowing(specgram, frequencies):
 	# Define windows for gaussian windowing
 	gaussian_windows = [signal.gaussian(math.log(f/1000, 2)*1000, math.log(f/1000, 2)*150) for f in params.freqs]
 
-	for g in gaussian_windows:
-		print(np.max(g), np.min(g))
-
-
 	# Get indices of frequencies of interest
 	freq_idxs = [np.where(np.logical_and(frequencies >= params.freqs[i]-len(win)/2, frequencies < params.freqs[i]+len(win)/2))
 						for i, win in enumerate(gaussian_windows)]
 
-	win_idxs = [np.array(frequencies[idx] - np.min(frequencies[idx])).astype(int) for idx in freq_idxs]
-
-	print(win_idxs)
+	gaussian_windows_reduced = [signal.gaussian(f[0].shape[0], f[0].shape[0] * 0.15) for f in freq_idxs]
 
 	magnitudes = []
-	# Multiply freq series by gaussian window or 0 ?? 
-	for i, freq in enumerate(freq_series):
-		magnitudes.append([np.sum(freq[freq_idxs[i]] * win[win_idxs[i]]) for i, win in enumerate(gaussian_windows)])
+	for freq in freq_series:
+		magnitudes.append([np.sum(g * freq[f_idx[0]]) for g, f_idx in zip(gaussian_windows_reduced, freq_idxs)])
+
 
 	magnitudes = np.array(magnitudes)
-	print(magnitudes.shape)
 	magnitudes = magnitudes/np.max(magnitudes)
-	print(magnitudes.shape)
+
+	return magnitudes
+
+def square_windowing(specgram, frequencies):
+	square_windows = [[3e3, 5e3], [14e3, 18e3], [28e3, 36e3]]
+
+	windows_idx = [[i for i, f in enumerate(frequencies) if np.logical_and(f >= win[0], f <= win[1])] for win in square_windows]
+	freq_series = [specgram[:, i] for i in range(specgram.shape[1])]
+
+	magnitudes = []
+	for i, f in enumerate(freq_series):
+		magnitudes.append([np.sum(f[win]) for win in windows_idx])
+
+	magnitudes = np.array(magnitudes)
+	magnitudes = magnitudes/np.max(magnitudes)
 
 	return magnitudes
 
 def gaussian_windowing_updated(specgram, frequencies):
 	# is the specgram normalized ? Think yes
 	# freq series is all the frequencies for each time point in the spectrogram
-	
+
 	# Define windows for gaussian windowing
 	gaussian_windows = [signal.gaussian(math.log(f/1000, 2)*1000, math.log(f/1000, 2)*150) for f in params.freqs]
-	gaussian_windows = [np.pad(g, (0, 97000-len(g))) for g in gaussian_windows]
-	#gaussian_windows = [np.histogram(g, bins=specgram.shape[0], density=True)[1] for g in gaussian_windows]
-	gaussian_windows = [np.mean(g.reshape(-1, 1000), axis=1) for g in gaussian_windows]
-	
-	# Multiply freq series by gaussian window or 0 ?? 
-	freq_series = [specgram[:, i] for i in range(specgram.shape[1])]
 
+	# pad windows to be multiply after
+	gaussian_windows = [np.pad(g, (0, int(frequencies[-1])-len(g))) for g in gaussian_windows]
+
+	for i, g in enumerate(gaussian_windows):
+		gaussian_windows[i] = [np.mean(g[int(frequencies[i]):int(f)]) for i, f in enumerate(frequencies[1:])]
+		gaussian_windows[i].append(0)
+
+	# Multiply freq series by gaussian window or 0 ??
+	freq_series = [specgram[:, i] for i in range(specgram.shape[1])]
+	for i in range(100):
+		plt.plot((freq_series[i] - np.min(freq_series[i]))/np.max(freq_series[i]))
+	plt.plot(gaussian_windows[1])
+	plt.show()
 	magnitudes = []
 	for i, freq in enumerate(freq_series):
-		magnitudes.append([np.sum(freq * g) for g in gaussian_windows]) # Maybe all gaussian need to have the same area under the curve
-		plt.plot(freq)
-		plt.show()
+		magnitudes.append([np.sum(freq * g) for g in gaussian_windows])
 
 	magnitudes = np.array(magnitudes)
 	magnitudes = magnitudes/np.max(magnitudes)
-	print(magnitudes.shape)
-	plt.imshow(magnitudes)
-	plt.show()
 
 	return magnitudes
 
@@ -242,15 +253,15 @@ def rectangle_windowing(specgram, frequencies, n_rectangle=5):
 	freqs_bounds = np.linspace(4e3, 32e3, num=n_rectangle + 1)
 	freq_series = [specgram[:, i] for i in range(specgram.shape[1])]
 
-	freq_idx = [np.where((frequencies > freqs_bounds[i]) & (frequencies < f)) for i, f in enumerate(freqs_bounds[1:])]
+	freq_idx = [np.where((frequencies >= freqs_bounds[i]) & (frequencies <= f)) for i, f in enumerate(freqs_bounds[1:])]
 
 	acti_rect = []
 	for i, freq in enumerate(freq_series):
-		freq = (freq - np.min(freq)) / (np.max(freq) - np.min(freq))
+		#freq = (freq - np.min(freq)) / (np.max(freq) - np.min(freq))
 		acti_rect.append([np.sum(freq[idx]) for idx in freq_idx])
 	acti_rect = np.array(acti_rect)
 
-	#acti_rect = (acti_rect - np.min(acti_rect)) / (np.max(acti_rect) - np.min(acti_rect))
+	acti_rect = (acti_rect - np.min(acti_rect)) / (np.max(acti_rect) - np.min(acti_rect))
 
 	for a in acti_rect:
 		print(a)

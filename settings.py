@@ -2,9 +2,9 @@
 
 import os
 import argparse
-import numpy as np 
+import numpy as np
 
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
 
 class paths():
 	def __init__(self):
@@ -19,14 +19,14 @@ class parameters():
 		self.freqs = [4e3, 16e3, 32e3]
 
 		plt.rcParams['figure.figsize'] = [20, 12]
-		plt.rcParams['figure.dpi'] 
+		plt.rcParams['figure.dpi']
 
 class arguments():
 	def __init__(self):
 		parser = argparse.ArgumentParser(description='Parameters for computing')
-		parser.add_argument('--rectangle', '-r', type=int, default=None, 
+		parser.add_argument('--rectangle', '-r', type=int, default=None,
 						    help='Number of stimulation rectangles')
-		parser.add_argument('--plot', '-p', action='store_true', 
+		parser.add_argument('--plot', '-p', action='store_true',
 						    help='If present, stimulations will be plotted')
 		self.args = parser.parse_args()
 
