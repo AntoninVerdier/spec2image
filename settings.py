@@ -14,7 +14,7 @@ class paths():
 
 class parameters():
 	def __init__(self):
-		self.size_implant = 80
+		self.size_implant = 200
 		self.freq_resolution = 4
 		self.freqs = [4e3, 16e3, 32e3]
 
@@ -28,6 +28,8 @@ class arguments():
 						    help='Number of stimulation rectangles')
 		parser.add_argument('--plot', '-p', action='store_true',
 						    help='If present, stimulations will be plotted')
+		parser.add_argument('--generate', '-g', action='store_true',
+						    help='If present, stimulations will be generated')		
 		self.args = parser.parse_args()
 
 

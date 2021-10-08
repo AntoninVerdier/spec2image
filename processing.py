@@ -263,9 +263,13 @@ def rectangle_windowing(specgram, frequencies, n_rectangle=5):
 
 	acti_rect = (acti_rect - np.min(acti_rect)) / (np.max(acti_rect) - np.min(acti_rect))
 
-	for a in acti_rect:
-		print(a)
-
 	return acti_rect
+
+def correlate_representations(a, b, lambertian=False):
+	""" Compute correlation for each slice of the projection """
+	correlates = [signal.correlate2d(a_slice, b_slice) for a_slice, b_slice in zip(a, b)]
+
+	return np.array(correlates)
+
 
 
