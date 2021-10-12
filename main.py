@@ -81,25 +81,43 @@ if args.generate:
 		projections = proc.implant_projection(all_maps, single_map=single_map)
 
 		np.save(os.path.join(paths.path2Output, file[:-4] + '_rectangles_6_40'), projections)
-		pl.cube_show_slider(np.swapaxes(projections[1:,:,:], 0, 2))
+		#pl.cube_show_slider(np.swapaxes(projections[1:,:,:], 0, 2))
 
 
 # Do a different processinf for AM sound
 # Revoir le gaussian windowing qui est chelou. Fréquence pas stable.
 
 def correlate():
-	# in dev
-	a = np.load(os.path.join(paths.path2Output,'PT_16000Hz_500ms_70dB_rectangles_6_40.npy'))
-	b = np.load(os.path.join(paths.path2Output,'PT_6000Hz_500ms_70dB_rectangles_6_40.npy'))
-
-	fig, axs = plt.subplots(3)
-	axs[0].imshow(a[0])
-	axs[1].imshow(b[0])
-	axs[2].imshow(signal.correlate(a[0], b[0]))
+	matrix_to_corr = []
+	for file in np.sort(os.listdir(paths.path2Output)):
+		if file.endswith('.npy'):
+			curr_proj = np.load(os.path.join(paths.path2Output, file))
+			curr_proj = np.mean(curr_proj, axis=0)
+			print(curr_proj.shape)
+			matrix_to_corr.append(curr_proj)
+	matrix_to_corr = np.array(matrix_to_corr)
+	matrix_to_corr = np.array([np.matrix.flatten(proj) for proj in matrix_to_corr])
+	print(matrix_to_corr)
+	correlation_matrix = np.corrcoef(matrix_to_corr, matrix_to_corr)
+	plt.imshow(correlation_matrix)
 	plt.show()
 
 
-	c = proc.correlate_representations(a, b)
-	print(c.shape)
 
-	pl.cube_show_slider(np.swapaxes(c, 0, 2))
+
+	# # in dev
+	# a = np.load(os.path.join(paths.path2Output,'PT_16000Hz_500ms_70dB_rectangles_6_40.npy'))
+	# b = np.load(os.path.join(paths.path2Output,'PT_6000Hz_500ms_70dB_rectangles_6_40.npy'))
+
+	# fig, axs = plt.subplots(3)
+	# axs[0].imshow(a[0])
+	# axs[1].imshow(b[0])
+	# axs[2].imshow(signal.correlate(a[0], b[0]))
+	# plt.show()
+
+
+	# c = proc.correlate_representations(a, b)
+	# print(c.shape)
+
+	# pl.cube_show_slider(np.swapaxes(c, 0, 2))
+correlate()
