@@ -26,7 +26,8 @@ args = sett.arguments().args
 
 
 if args.generate:
-	for file in tqdm(os.listdir(paths.path2Sample)):
+	for i, file in enumerate(tqdm(os.listdir(paths.path2Sample)[1:2])):
+		print(i, file)
 
 		#Extract data
 		sample, samplerate = librosa.load(os.path.join(paths.path2Sample, file),
@@ -81,7 +82,13 @@ if args.generate:
 		projections = proc.implant_projection(all_maps, single_map=single_map)
 
 		np.save(os.path.join(paths.path2Output, file[:-4] + '_rectangles_6_40'), projections)
-		#pl.cube_show_slider(np.swapaxes(projections[1:,:,:], 0, 2))
+
+		for j, p in enumerate(projections):
+			plt.imshow(p)
+			plt.savefig('{:03d}.png'.format(j))
+			plt.close()
+
+		pl.cube_show_slider(np.swapaxes(projections[1:,:,:], 0, 2))
 
 
 # Do a different processinf for AM sound
